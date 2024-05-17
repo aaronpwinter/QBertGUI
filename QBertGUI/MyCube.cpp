@@ -23,6 +23,37 @@ int mathCombo(int n, int k)
 
 using namespace MyCubeDefs;
 
+
+Corner MyCube::getCornerAt(Corner c) const
+{
+	return Corner(getInfo(CornerCoord[c][0]));
+}
+
+Edge MyCube::getEdgeAt(Edge e) const
+{
+	return Edge(getInfo(EdgeCoord[e][0]));
+}
+
+MyCubeLite MyCube::getLite() const
+{
+	MyCubeLite ret;
+
+	//Corners
+	for (int c = 0; c < NumCorners; ++c)
+	{
+		ret.setCorner(Corner(c), getCornerAt(Corner(c)), getCornerOri(Corner(c)));
+	}
+
+	//Edges
+	for (int e = 0; e < NumEdges; ++e)
+	{
+		ret.setEdge(Edge(e), getEdgeAt(Edge(e)), getEdgeOri(Edge(e)));
+	}
+
+	return ret;
+
+}
+
 void MyCube::reset()
 {
 	FunnyCube::reset();
@@ -89,20 +120,68 @@ std::vector<MyCube::RotInfo> MyCube::solve(int max_moves) const
 	MyCube c1(*this);
 	std::vector<MyCube::RotInfo> ret = c1.resetOrientation();
 
-	std::vector<MyCube::RotInfo> g1 = c1.solveToG1(max_moves);
-	ret.insert(ret.end(), g1.begin(), g1.end());
+	std::vector<MyCubeLite::RotLite> solve = c1.getLite().solve(max_moves);
+	
+	for (int i = 0; i < solve.size(); ++i)
+	{
+		ret.push_back(rotLiteToRot(solve[i]));
+	}
 
-	/*
-	MyCube c2(*this);
+	return ret;
+}
 
-	c2.turn(ret);
+bool MyCube::solved() const
+{
+	return getLite().solved();
+}
 
-	if (!c2.isG1()) return ret;
 
-	std::vector<MyCube::RotInfo> solve2 = c2.solveFromG1();
-	ret.insert(ret.end(), solve2.begin(), solve2.end());
-	*/
+int MyCube::getCornerOri(Corner c) const
+{
+	Color color1 = getColor(CornerCoord[c][0]), color2 = getColor(CornerCoord[c][1]), color3 = getColor(CornerCoord[c][2]);
+	if (color1 == White || color1 == Yellow) return 0;
+	if (color2 == White || color2 == Yellow) return 1;
+	if (color3 == White || color3 == Yellow) return 2;
 
+	//bad
+	return -1;
+}
+
+int MyCube::getEdgeOri(Edge e) const
+{
+	Color color1 = getColor(EdgeCoord[e][0]), color2 = getColor(EdgeCoord[e][1]);
+	if (color1 == White || color1 == Yellow) return 0;
+	if (color2 == White || color2 == Yellow) return 1;
+	//Now using green/blue
+	if (color1 == Green || color1 == Blue) return 0;
+	if (color2 == Green || color2 == Blue) return 1;
+
+	return -1;
+}
+/*
+int MyCube::getCornerPerm(Corner c) const
+{
+	int ret = 0;
+	Corner cur = getCornerAt(c);
+	for (int i = 0; i < c; ++i)
+	{
+		//if corner at i > corner at c
+		if (getCornerAt(Corner(i)) > cur)
+			++ret;
+	}
+	return ret;
+}
+
+int MyCube::getEdgePerm(Edge e) const
+{
+	int ret = 0;
+	Edge cur = getEdgeAt(e);
+	for (int i = 0; i < e; ++i)
+	{
+		//if corner at i > corner at c
+		if (getEdgeAt(Edge(i)) > cur)
+			++ret;
+	}
 	return ret;
 }
 
@@ -174,68 +253,9 @@ void MyCube::initSolveArray(int * arr, int len, const RotInfo * moves, int moves
 }
 
 
-Corner MyCube::getCornerAt(Corner c) const
-{
-	return Corner(getInfo(CornerCoord[c][0]));
-}
-
-Edge MyCube::getEdgeAt(Edge e) const
-{
-	return Edge(getInfo(EdgeCoord[e][0]));
-}
-
-int MyCube::getCornerOri(Corner c) const
-{
-	Color color1 = getColor(CornerCoord[c][0]), color2 = getColor(CornerCoord[c][1]), color3 = getColor(CornerCoord[c][2]);
-	if (color1 == White || color1 == Yellow) return 0;
-	if (color2 == White || color2 == Yellow) return 1;
-	if (color3 == White || color3 == Yellow) return 2;
-
-	//bad
-	return -1;
-}
-
-int MyCube::getEdgeOri(Edge e) const
-{
-	Color color1 = getColor(EdgeCoord[e][0]), color2 = getColor(EdgeCoord[e][1]);
-	if (color1 == White || color1 == Yellow) return 0;
-	if (color2 == White || color2 == Yellow) return 1;
-	//Now using green/blue
-	if (color1 == Green || color1 == Blue) return 0;
-	if (color2 == Green || color2 == Blue) return 1;
-
-	return -1;
-}
-
-int MyCube::getCornerPerm(Corner c) const
-{
-	int ret = 0;
-	Corner cur = getCornerAt(c);
-	for (int i = 0; i < c; ++i)
-	{
-		//if corner at i > corner at c
-		if(getCornerAt(Corner(i)) > cur)
-			++ret;
-	}
-	return ret;
-}
-
-int MyCube::getEdgePerm(Edge e) const
-{
-	int ret = 0;
-	Edge cur = getEdgeAt(e);
-	for (int i = 0; i < e; ++i)
-	{
-		//if corner at i > corner at c
-		if (getEdgeAt(Edge(i)) > cur)
-			++ret;
-	}
-	return ret;
-}
-
 int MyCube::getCornerOriCoord() const
 {
-	/*
+	///*
 	https://kociemba.org/math/coordlevel.htm#cornoridef
 	function CubieCube.CornOriCoord:Word;
 	var co: Corner; s: Word;
@@ -244,7 +264,7 @@ int MyCube::getCornerOriCoord() const
 	for co:= URF to Pred(DRB) do s:= 3*s + PCorn^[co].o;
 	Result:= s;
 	end;
-	*/
+	//
 	int ret = 0;
 	for (int c = 0; c < DRB; ++c)
 	{
@@ -265,7 +285,7 @@ int MyCube::getEdgeOriCoord() const
 	for ed:= UR to Pred(BR) do s:= 2*s + PEdge^[ed].o;
 	Result:= s;
 	end;
-	*/
+	/
 	int ret = 0;
 	for (int e = 0; e < BR; ++e)
 	{
@@ -293,7 +313,7 @@ int MyCube::getUDSliceCoord() const
 	end;
 	Result:= s;
 	end;
-	*/
+	/
 	int ret = 0, n = NumEdges-1, k = 3;
 
 	bool udSliceIn[NumEdges];
@@ -410,7 +430,7 @@ int MyCube::getCornerPermCoord() const
 	end;
 	Result:=x;
 	end;
-	*/
+	/
 	int ret = 0;
 	for (int c = DRB; c > URF; --c)
 	{
@@ -439,7 +459,7 @@ int MyCube::getEdgePermCoord() const
 	end;
 	Result:=x;
 	end;
-	*/
+	/
 	int ret = 0;
 	for (int e = DB; e > UR; --e)
 	{
@@ -476,7 +496,7 @@ int MyCube::getUDSliceSortedCoord() const
 	end;
 	Result:= UDSliceCoord*24 + x;
 	end;
-	*/
+	/
 	int ret = 0;
 
 	Edge edges[4];
@@ -565,6 +585,7 @@ int MyCube::searchFromG1(std::vector<RotInfo>& rots, int g, int bound) const
 	}
 	return min;
 }
+*/
 
 MyCubeLite::RotLite MyCube::rotToRotLite(RotInfo r)
 {
@@ -592,6 +613,46 @@ MyCubeLite::RotLite MyCube::rotToRotLite(RotInfo r)
 		break;
 	}
 	ret.r = (r.cwturn % 4 + 4) % 4;
+
+	return ret;
+}
+
+MyCube::RotInfo MyCube::rotLiteToRot(MyCubeLite::RotLite r)
+{
+	RotInfo ret{ R, 1, 0, true };
+
+	switch (r.m) //F, R, U, L, B, D
+	{
+	case MyCubeLite::F:
+		ret.m = F;
+		break;
+	case MyCubeLite::R:
+		ret.m = R;
+		break;
+	case MyCubeLite::U:
+		ret.m = U;
+		break;
+	case MyCubeLite::L:
+		ret.m = L;
+		break;
+	case MyCubeLite::B:
+		ret.m = B;
+		break;
+	case MyCubeLite::D:
+		ret.m = D;
+		break;
+	}
+
+	switch (r.r)
+	{
+	case 1:
+	case 2:
+		ret.cwturn = r.r;
+		break;
+	case 3:
+		ret.cwturn = -1;
+		break;
+	}
 
 	return ret;
 }
