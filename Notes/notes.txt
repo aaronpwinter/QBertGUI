@@ -1,0 +1,81 @@
+FRULBD
+
+U2
+U3
+U3'
+U'
+2U (slice)
+2Uw = 2u = u = Uw
+3Uw = 3u
+
+x = R dir
+y = U dir
+z = F dir
+
+M E S
+M = 2L -> -2L (inclusive) = L' R x' 
+E = 2D -> -2D = D' U y'
+S = 2F -> -2F = F' B z
+
+^(\s*)(?'layers'\d*)(?'move'[a-zA-Z])(?'wide'w?)(?'cwturn'\d*)(?'ccw''?)(\s*)$
+
+groups
+layers
+move
+wide
+cwturn
+ccw
+
+iN8Yz*w8B4nP3tg5nGh^
+
+T 
+R U R' U' R' F R2 U' R' U' R U R' F'
+Rw Uw Rw' Uw' r' f Rw2 Uw' Rw' Uw' Rw u r' Fw'
+
+last slot last layer
+F' U2 F U F' U' F U' F' U F U' F' U' F U2 R U R' U R U' R' U F' U' F R U R' F' U F
+
+3x3
+B D2 R2 D2 L2 B L2 F D2 L2 R2 U2 R' D L U B2 R2 B L F'
+
+
+R' D2 R' U' L2 D R F L' B 
+R' D2 R' U' L2 D R F L' B L2 U L2 U2 B2 D' L2 F2 D' B2 R2 B2 L2 U' 
+U2 R B' R2 U D L' B U R' L2 B2 L2 D' L2 D2 R2 B2 R2 D' B2 U2
+
+F R U B' L F' U D F' L F2 R2 D' F2 U B2 L2 F2 L2 U L2 D' R2 D F2 D' 
+
+
+5x5
+Uw2 F' L2 Dw F' Dw U B2 F' U Lw U' B' Rw U2 Dw2 Lw2 L Fw Lw R B' F U' Dw2 L2 Dw2 F2 Uw2 L' Rw Dw Rw' Bw U' D' Uw' F' L B F' Fw Bw' Rw D B2 Fw2 Uw' U2 F2 Fw' Lw' U' Bw2 Dw' Bw Rw' Fw L2 B2
+
+Uw2 F' L2 Dw F' Dw U B2 F' U Lw U' B' Rw U2 Dw2 Lw2 L Fw Lw 
+R B' F U' Dw2 L2 Dw2 F2 Uw2 L' Rw Dw Rw' Bw U' D' Uw' F' L 
+B F' Fw Bw' Rw D B2 Fw2 Uw' U2 F2 Fw' Lw' U' Bw2 Dw' 
+Bw Rw' Fw L2 B2
+
+6x6
+Uw2 R2 F2 D2 Rw 3Fw2 B' Fw2 D 3Uw' U' L' B Dw2 3Rw2 Fw B' U' Lw2 3Uw2 3Fw Dw' R' 3Uw B 3Rw' R L Fw R' U' L Rw2 Lw F 3Rw2 Rw' 3Uw2 Fw2 U' D B 3Uw' B' 3Rw F2 3Fw' 3Uw' R' Dw' B2 Rw2 Fw2 Uw' D2 3Uw R2 U L2 F L2 Uw' 3Fw' 3Rw2 L2 F L' 3Fw2 U B' 3Fw2 Lw L2 Fw L2 F2 D Dw2 3Fw2 R
+R' 3Fw2' Dw2' D' F2' L2' Fw' L2' Lw' 3Fw2' B U' 3Fw2' L F' L2' 3Rw2' 3Fw Uw L2' F' L2' U' R2' 3Uw' D2' Uw Fw2' Rw2' B2' Dw R 3Uw 3Fw F2' 3Rw' B 3Uw B' D' U Fw2' 3Uw2' Rw 3Rw2' F' Lw' Rw2' L' U R Fw' L' R' 3Rw B' 3Uw' R Dw 3Fw' 3Uw2' Lw2' U B Fw' 3Rw2' Dw2' B' L U 3Uw D' Fw2' B 3Fw2' Rw' D2' F2' R2' Uw2'
+
+
+7x7
+R' Dw2 Uw' R 3Lw' 3Rw 3Bw' R2 3Rw B' U Lw U' 3Fw 3Dw' Uw2 L2 Bw' D2 3Lw 3Dw2 B2 D R 3Lw L' Lw' D 3Dw2 U2 F Dw' Bw' L F' L' U F' Rw2 F Rw Fw Uw U Bw2 D2 3Lw' Fw F' Uw' 3Dw2 3Lw2 L2 Bw' Rw2 Bw' Dw2 3Lw Uw2 R2 F2 U' 3Rw' F 3Bw 3Uw' Rw2 3Uw' F2 Dw2 B2 3Rw2 Lw Fw' 3Dw' Lw 3Rw' Rw' F2 3Uw2 3Bw' L R' 3Uw' Lw D L' Rw' 3Rw 3Uw Bw Rw2 Bw2 Rw F 3Fw L' R' Lw2 3Uw'
+
+
+rerpresent
+
+0,0,0 > 1,1,1
+
+U = 0,1,0, > 1,1,1
+ o x x x
+ x x o x
+ x x x x
+ x x x x
+    4x4, top left = 0,1,.75 > .25,1,1
+         square 1,2 = .5,1,.5 > .75,1,.75
+
+         that idea
+         then do like transformations on it.....
+         3 transfomraitons only -> translation (to make it centered) rotation, translation again, camera projection
+
