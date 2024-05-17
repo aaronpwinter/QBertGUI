@@ -8,21 +8,26 @@ class FunnyCube
 {
 	//public info
 public:
-	enum Side { Front = 0, Right = 1, Up = 2, Left = 3, Back = 4, Down = 5 };
-	enum Color { White, Green, Red, Blue, Orange, Yellow };
+	//--ENUMS
+	enum Side	{ Front = 0, Right = 1, Up = 2, Left = 3, Back = 4, Down = 5 };
+	enum Color	{ Green = Front, Red = Right, White = Up, Orange = Left, Blue = Back, Yellow = Down };
+	enum Move	{ F, R, U, L, B, D, X, Y, Z, M, E, S, BadMove };
+
+	//--STRUCTS
 	struct Facelet
 	{
 		Color c;
 		int orgRow, orgCol;
-		int info = -1;
+		int info = -1; //Optional info tag for each facelet
 	};
-	enum Move { F, R, U, L, B, D, X, Y, Z, M, E, S, BadMove };
 	struct RotInfo
 	{
 		Move m;
 		int layers;
 		int cwturn; //Amount of times to turn clockwise. -1 for ccw
 		bool wide; //If this is a wide turn (IE: turn multiple layers)
+
+		RotInfo reversed()									{ return {m, layers, cwturn==2?cwturn:-cwturn, wide}; };
 	};
 	struct CubeCoord
 	{
@@ -30,8 +35,26 @@ public:
 		int r, c;
 	};
 
+	
+	//--CONSTS
+	static const inline std::wstring ColorAsWStr[6] =		{ L"G", L"R", L"W", L"O", L"B", L"Y" };
+	static const inline std::string ColorAsStr[6] =			{ "G", "R", "W", "O", "B", "Y" };
+	static constexpr inline COLORREF ColorAsColorRef[6] =
+		{
+			RGB(50, 255, 50),	//Green
+			RGB(255, 0, 0),		//Red
+			RGB(255, 255, 255),	//White
+			RGB(255, 121, 0),	//Orange
+			RGB(10, 10, 255),	//Blue
+			RGB(255, 255, 0),	//Yellow
+		};
+
+	static const inline std::wstring MoveAsWStr[13] =		{ L"F", L"R", L"U", L"L", L"B", L"D", L"x", L"y", L"z", L"M", L"E", L"S", L"-" };
+	static const inline std::string MoveAsStr[13] =			{ "F", "R", "U", "L", "B", "D", "x", "y", "z", "M", "E", "S", "-" };
+
 	//public methods
 public:
+	//--CLASS STUFF :)
 	FunnyCube(int sz) :
 		m_size(sz), m_size2(m_size*m_size), m_cube(6 * m_size*m_size)
 	{
@@ -53,73 +76,85 @@ public:
 	{
 	};
 
-	//Access
+	//--ACCESS
 	int size() const { return m_size; }
 
-	int index(Side s, int row, int col) const
-	{
-		return (s * m_size2) + (row * m_size) + col;
-	}
-	int index(CubeCoord coord) const { return index(coord.s, coord.r, coord.c); }
+	int index(Side s, int row, int col) const				{	return (s * m_size2) + (row * m_size) + col; }
 
-	Color get(Side s, int row, int col)	const { return m_cube[index(s, row, col)].c; }
-	Color get(CubeCoord coord) const { return get(coord.s, coord.r, coord.c); }
-	Facelet getFacelet(Side s, int row, int col) const { return m_cube[index(s, row, col)]; }
-	Facelet getFacelet(CubeCoord coord) const { return getFacelet(coord.s, coord.r, coord.c); }
-	int getInfo(Side s, int row, int col) const { return m_cube[index(s, row, col)].info; }
-	int getInfo(CubeCoord coord) const { return getInfo(coord.s, coord.r, coord.c); }
+	Facelet get(Side s, int row, int col)	const			{ return m_cube[index(s, row, col)]; }
+	Color getColor(Side s, int row, int col) const			{ return m_cube[index(s, row, col)].c; }
+	int getInfo(Side s, int row, int col) const				{ return m_cube[index(s, row, col)].info; }
 
-	void set(Side s, int row, int col, Color c)	{ m_cube[index(s, row, col)].c = c; }
-	void set(CubeCoord coord, Color c) { set(coord.s, coord.r, coord.c, c); }
-	void setFacelet(Side s, int row, int col, Facelet f) { m_cube[index(s, row, col)] = f; }
-	void setFacelet(CubeCoord coord, Facelet f) { setFacelet(coord.s, coord.r, coord.c, f); }
-	void setInfo(Side s, int row, int col, int i) { m_cube[index(s, row, col)].info = i; }
-	void setInfo(CubeCoord coord, int i) { setInfo(coord.s, coord.r, coord.c, i); }
+	void set(Side s, int row, int col, Facelet f)			{ m_cube[index(s, row, col)] = f; }
+	void setColor (Side s, int row, int col, Color c)		{ m_cube[index(s, row, col)].c = c; }
+	void setInfo(Side s, int row, int col, int i)			{ m_cube[index(s, row, col)].info = i; }
+
+	//-CubeCoord access versions
+	int index(CubeCoord coord) const						{ return index(coord.s, coord.r, coord.c); }
+
+	Facelet get(CubeCoord coord) const						{ return get(coord.s, coord.r, coord.c); }
+	Color getColor(CubeCoord coord) const					{ return getColor(coord.s, coord.r, coord.c); }
+	int getInfo(CubeCoord coord) const						{ return getInfo(coord.s, coord.r, coord.c); }
+
+	void set(CubeCoord coord, Facelet f)					{ set(coord.s, coord.r, coord.c, f); }
+	void setColor(CubeCoord coord, Color c)					{ setColor(coord.s, coord.r, coord.c, c); }
+	void setInfo(CubeCoord coord, int i)					{ setInfo(coord.s, coord.r, coord.c, i); }
 
 
-	//Change
+	//--CHANGE
 	//Reset cube to normalness
 	virtual void reset();
 
 	//Turn the cube using specified rotation info
 	//	If invalid return false
-	bool turn(RotInfo r);
-	void turn(std::vector<RotInfo> rots);
+	virtual bool turn(RotInfo r);
+	virtual void turn(std::vector<RotInfo> rots);
 
 
 
-	//Data
-	std::wstring asString() const;
+	//--DATA
+
+	//-STATIC
+	//Colors
+	static std::wstring colorToWStr(Color c)				{ return ColorAsWStr[c]; };
+	static std::string colorToStr(Color c)					{ return ColorAsStr[c]; };
+	static COLORREF colorToColorRef(Color c)				{ return ColorAsColorRef[c]; };
+
+	//Prints a single square Å° to Windows terminal with a color
+	static void prettyPrintColor(Color c);
+
+	//Rotations
+	static RotInfo strToRot(std::wstring s);
+	static RotInfo wstrToRot(std::wstring s)				{ return strToRot(s); };
+	static RotInfo strToRot(std::string s);
+
+	static std::vector<FunnyCube::RotInfo> strToRots(std::wstring s);
+	static std::vector<FunnyCube::RotInfo> wstrToRots(std::wstring s) { return strToRots(s); };
+	static std::vector<FunnyCube::RotInfo> strToRots(std::string s);
+
+	static std::wstring rotToWStr(RotInfo r);
+	static std::string rotToStr(RotInfo r);
+
+	static std::vector<FunnyCube::RotInfo> reverseRots(std::vector<RotInfo> rots);
+
+
+	//-MEMBER FUNCTIONS
+	std::wstring asWString() const;
+	std::string asString() const;
 
 	//For Windows terminal
 	void prettyPrint() const;
 
-	static const inline std::wstring ColorAsWStr[6] = { L"W", L"G", L"R", L"B", L"O", L"Y" };
-	static const inline std::string ColorAsStr[6] = { "W", "G", "R", "B", "O", "Y" };
-	static const inline COLORREF ColorAsColorRef[6] = 
-		{ 
-			RGB(255, 255, 255),
-			RGB(50, 255, 50),
-			RGB(255, 0, 0),
-			RGB(10, 10, 255),
-			RGB(255, 121, 0),
-			RGB(255, 255, 0),
-		};
-	static std::wstring colToStr(Color c);
-	static COLORREF colToColorRef(Color c);
-	COLORREF getColorRef(Side s, int row, int col) const { return colToColorRef(get(s, row, col)); };
+	COLORREF getColorRef(Side s, int row, int col) const	{ return colorToColorRef(getColor(s, row, col)); };
 
-	static void prettyPrintColor(Color c);
 
 	//Get Rotation info and stuff
-	static RotInfo strToRot(std::wstring s);
-	static std::wstring rotToStr(RotInfo r);
-	std::wstring rotToNotation(RotInfo r) const;
+	std::wstring rotToNotationW(RotInfo r) const;
+	std::string rotToNotation(RotInfo r) const;
 
-	static std::vector<FunnyCube::RotInfo> strToRots(std::wstring s);
-	std::wstring rotsToNotation(std::vector<RotInfo> rots) const;
+	std::wstring rotsToNotationW(std::vector<RotInfo> rots) const;
+	std::string rotsToNotation(std::vector<RotInfo> rots) const;
 
-	static std::vector<FunnyCube::RotInfo> reverseRots(std::vector<RotInfo> rots);
 
 	//Private Methods
 private:

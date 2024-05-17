@@ -3,6 +3,7 @@
 
 #include <queue>
 
+
 int mathCombo(int n, int k)
 {
 	if (k == 0) return 1;
@@ -20,6 +21,7 @@ int mathCombo(int n, int k)
 	return ret;
 }
 
+using namespace MyCubeDefs;
 
 void MyCube::reset()
 {
@@ -63,44 +65,43 @@ std::vector<MyCube::RotInfo> MyCube::resetOrientation()
 	std::vector<RotInfo> ret;
 
 	//Make white go up
-	if (getFacelet(Down, 1, 1).info == Up) ret.push_back({ X, 1, 2, true });
-	else if (getFacelet(Back, 1, 1).info == Up) ret.push_back({ X, 1, -1, true });
-	else if (getFacelet(Front, 1, 1).info == Up) ret.push_back({ X, 1, 1, true });
-	else if (getFacelet(Left, 1, 1).info == Up) ret.push_back({ Z, 1, 1, true });
-	else if (getFacelet(Right, 1, 1).info == Up) ret.push_back({ Z, 1, -1, true });
+	if (getInfo(Down, 1, 1) == Up) ret.push_back({ X, 1, 2, true });
+	else if (getInfo(Back, 1, 1) == Up) ret.push_back({ X, 1, -1, true });
+	else if (getInfo(Front, 1, 1) == Up) ret.push_back({ X, 1, 1, true });
+	else if (getInfo(Left, 1, 1) == Up) ret.push_back({ Z, 1, 1, true });
+	else if (getInfo(Right, 1, 1) == Up) ret.push_back({ Z, 1, -1, true });
 
 	size_t firstSize = ret.size();
 	if (firstSize == 1) turn(ret[0]);
 
 	//make green go front
-	if (getFacelet(Back, 1, 1).info == Front) ret.push_back({ Y, 1, 2, true });
-	else if (getFacelet(Left, 1, 1).info == Front) ret.push_back({ Y, 1, -1, true });
-	else if (getFacelet(Right, 1, 1).info == Front) ret.push_back({ Y, 1, 1, true });
+	if (getInfo(Back, 1, 1) == Front) ret.push_back({ Y, 1, 2, true });
+	else if (getInfo(Left, 1, 1) == Front) ret.push_back({ Y, 1, -1, true });
+	else if (getInfo(Right, 1, 1) == Front) ret.push_back({ Y, 1, 1, true });
 
 	if(firstSize < ret.size()) turn(ret[firstSize]);
 
 	return ret;
 }
 
-std::vector<MyCube::RotInfo> MyCube::solve()
+std::vector<MyCube::RotInfo> MyCube::solve(int max_moves) const
 {
 	MyCube c1(*this);
 	std::vector<MyCube::RotInfo> ret = c1.resetOrientation();
 
-	std::vector<MyCube::RotInfo> g1 = c1.solveToG1();
+	std::vector<MyCube::RotInfo> g1 = c1.solveToG1(max_moves);
 	ret.insert(ret.end(), g1.begin(), g1.end());
 
+	/*
 	MyCube c2(*this);
 
-	for (unsigned i = 0; i < ret.size(); ++i)
-	{
-		c2.turn(ret[i]);
-	}
+	c2.turn(ret);
 
 	if (!c2.isG1()) return ret;
 
 	std::vector<MyCube::RotInfo> solve2 = c2.solveFromG1();
 	ret.insert(ret.end(), solve2.begin(), solve2.end());
+	*/
 
 	return ret;
 }
@@ -120,14 +121,12 @@ void MyCube::initSolve()
 	initSolveArray(UDSliceSteps, _countof(UDSliceSteps), phase1Moves, _countof(phase1Moves), &S_getUDSliceCoord);
 	initSolveArray(CornerPermSteps, _countof(CornerPermSteps), phase2Moves, _countof(phase2Moves), &S_getCornerPermCoord);
 	initSolveArray(EdgePermSteps, _countof(EdgePermSteps), phase2Moves, _countof(phase2Moves), &S_getEdgePermCoord);
-	initSolveArray(UDSliceSortedSteps, _countof(UDSliceSortedSteps), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoord);
-	int aaron = 0;
-	
+	initSolveArray(UDSliceSortedSteps, _countof(UDSliceSortedSteps), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoord);	
 
 }
 
 //This basically puts the estimated lowest number of turns to get to a certain value for the various different values
-void MyCube::initSolveArray(int * arr, int len, const RotInfo * moves, int movesLen, int(*f)(MyCube&))
+void MyCube::initSolveArray(int * arr, int len, const RotInfo * moves, int movesLen, int(*f)(const MyCube&))
 {
 	//init array with lowest num turns being the max
 	for (int i = 0; i < len; ++i) arr[i] = MAX_MOVES;
@@ -175,19 +174,19 @@ void MyCube::initSolveArray(int * arr, int len, const RotInfo * moves, int moves
 }
 
 
-MyCube::Corner MyCube::getCornerAt(Corner c)
+Corner MyCube::getCornerAt(Corner c) const
 {
-	return Corner(getFacelet(CornerCoord[c][0]).info);
+	return Corner(getInfo(CornerCoord[c][0]));
 }
 
-MyCube::Edge MyCube::getEdgeAt(Edge e)
+Edge MyCube::getEdgeAt(Edge e) const
 {
-	return Edge(getFacelet(EdgeCoord[e][0]).info);
+	return Edge(getInfo(EdgeCoord[e][0]));
 }
 
-int MyCube::getCornerOri(Corner c)
+int MyCube::getCornerOri(Corner c) const
 {
-	Color color1 = get(CornerCoord[c][0]), color2 = get(CornerCoord[c][1]), color3 = get(CornerCoord[c][2]);
+	Color color1 = getColor(CornerCoord[c][0]), color2 = getColor(CornerCoord[c][1]), color3 = getColor(CornerCoord[c][2]);
 	if (color1 == White || color1 == Yellow) return 0;
 	if (color2 == White || color2 == Yellow) return 1;
 	if (color3 == White || color3 == Yellow) return 2;
@@ -196,9 +195,9 @@ int MyCube::getCornerOri(Corner c)
 	return -1;
 }
 
-int MyCube::getEdgeOri(Edge e)
+int MyCube::getEdgeOri(Edge e) const
 {
-	Color color1 = get(EdgeCoord[e][0]), color2 = get(EdgeCoord[e][1]);
+	Color color1 = getColor(EdgeCoord[e][0]), color2 = getColor(EdgeCoord[e][1]);
 	if (color1 == White || color1 == Yellow) return 0;
 	if (color2 == White || color2 == Yellow) return 1;
 	//Now using green/blue
@@ -208,7 +207,7 @@ int MyCube::getEdgeOri(Edge e)
 	return -1;
 }
 
-int MyCube::getCornerPerm(Corner c)
+int MyCube::getCornerPerm(Corner c) const
 {
 	int ret = 0;
 	Corner cur = getCornerAt(c);
@@ -221,7 +220,7 @@ int MyCube::getCornerPerm(Corner c)
 	return ret;
 }
 
-int MyCube::getEdgePerm(Edge e)
+int MyCube::getEdgePerm(Edge e) const
 {
 	int ret = 0;
 	Edge cur = getEdgeAt(e);
@@ -234,7 +233,7 @@ int MyCube::getEdgePerm(Edge e)
 	return ret;
 }
 
-int MyCube::getCornerOriCoord()
+int MyCube::getCornerOriCoord() const
 {
 	/*
 	https://kociemba.org/math/coordlevel.htm#cornoridef
@@ -255,7 +254,7 @@ int MyCube::getCornerOriCoord()
 	return ret;
 }
 
-int MyCube::getEdgeOriCoord()
+int MyCube::getEdgeOriCoord() const
 {
 	/*
 	https://kociemba.org/math/coordlevel.htm#edgeoridef
@@ -276,7 +275,7 @@ int MyCube::getEdgeOriCoord()
 	return ret;
 }
 
-int MyCube::getUDSliceCoord()
+int MyCube::getUDSliceCoord() const
 {
 	/*
 	https://kociemba.org/math/twophase.htm#udslicedef
@@ -314,7 +313,7 @@ int MyCube::getUDSliceCoord()
 	return ret;
 }
 
-bool MyCube::isG1()
+bool MyCube::isG1() const
 {
 	CoordTriple c = getPhase1Coords();
 	return (c.x1 == 0) && (c.x2 == 0) && (c.x3 == 0);
@@ -331,21 +330,21 @@ int MyCube::S_stepsFromG1(CoordTriple c)
 	return s3;
 }
 
-std::vector<MyCube::RotInfo> MyCube::solveToG1()
+std::vector<MyCube::RotInfo> MyCube::solveToG1(int max_depth) const
 {
 	std::vector<RotInfo> rots;
 
 	int bound = stepsFromG1();
 
-	while (bound < MAX_MOVES)
+	while (bound < max_depth)
 	{
-		bound = searchToG1(rots, 0, bound);
+		bound = searchToG1(rots, 0, bound, max_depth);
 	}
 
 	return rots;
 }
 
-int MyCube::searchToG1(std::vector<RotInfo>& rots, int g, int bound)
+int MyCube::searchToG1(std::vector<RotInfo>& rots, int g, int bound, int max_depth) const
 {
 	int f = g + stepsFromG1();
 
@@ -364,8 +363,25 @@ int MyCube::searchToG1(std::vector<RotInfo>& rots, int g, int bound)
 			MyCube temp(*this);
 			temp.turn(r);
 
-			int tempMin = temp.searchToG1(rots, g + 1, bound);
-			if (tempMin >= MAX_MOVES) return tempMin;
+			int tempMin = temp.searchToG1(rots, g + 1, bound, max_depth);
+			if (tempMin >= MAX_MOVES)
+			{
+				if (temp.isG1())
+				{
+					std::vector<RotInfo> r2 = temp.solveFromG1(max_depth - g);
+					temp.turn(r2);
+					if (temp.solved())
+					{
+						rots.insert(rots.end(), r2.begin(), r2.end());
+						return tempMin;
+					}
+				}
+				else
+				{
+					return tempMin;
+				}
+				
+			}
 			if (tempMin < min) min = tempMin;
 
 			rots.pop_back();
@@ -375,7 +391,7 @@ int MyCube::searchToG1(std::vector<RotInfo>& rots, int g, int bound)
 }
 
 
-int MyCube::getCornerPermCoord()
+int MyCube::getCornerPermCoord() const
 {
 	/*
 	https://kociemba.org/math/coordlevel.htm#cornpermdef
@@ -404,7 +420,7 @@ int MyCube::getCornerPermCoord()
 	return ret;
 }
 
-int MyCube::getEdgePermCoord()
+int MyCube::getEdgePermCoord() const 
 {
 	/*
 	https://kociemba.org/math/twophase.htm#phase2edge
@@ -433,7 +449,7 @@ int MyCube::getEdgePermCoord()
 	return ret;
 }
 
-int MyCube::getUDSliceSortedCoord()
+int MyCube::getUDSliceSortedCoord() const
 {
 	/*
 	https://kociemba.org/math/twophase.htm#phase2udslice
@@ -488,7 +504,7 @@ int MyCube::getUDSliceSortedCoord()
 	return getUDSliceCoord()*24 + ret;
 }
 
-bool MyCube::solved()
+bool MyCube::solved() const
 {
 	CoordTriple c = getPhase2Coords();
 	return (c.x1 == 0) && (c.x2 == 0) && (c.x3 == 0);
@@ -505,7 +521,7 @@ int MyCube::S_stepsFromSolved(CoordTriple c)
 	return s3;
 }
 
-std::vector<MyCube::RotInfo> MyCube::solveFromG1()
+std::vector<MyCube::RotInfo> MyCube::solveFromG1(int max_depth) const
 {
 	std::vector<RotInfo> rots;
 
@@ -513,7 +529,7 @@ std::vector<MyCube::RotInfo> MyCube::solveFromG1()
 
 	int bound = stepsFromSolved();
 
-	while (bound < MAX_MOVES)
+	while (bound < max_depth)
 	{
 		bound = searchFromG1(rots, 0, bound);
 	}
@@ -521,7 +537,7 @@ std::vector<MyCube::RotInfo> MyCube::solveFromG1()
 	return rots;
 }
 
-int MyCube::searchFromG1(std::vector<RotInfo>& rots, int g, int bound)
+int MyCube::searchFromG1(std::vector<RotInfo>& rots, int g, int bound) const
 {
 	int f = g + stepsFromSolved();
 
@@ -548,4 +564,34 @@ int MyCube::searchFromG1(std::vector<RotInfo>& rots, int g, int bound)
 		}
 	}
 	return min;
+}
+
+MyCubeLite::RotLite MyCube::rotToRotLite(RotInfo r)
+{
+	MyCubeLite::RotLite ret;
+
+	switch (r.m) //F, R, U, L, B, D
+	{
+	case F:
+		ret.m = MyCubeLite::F;
+		break;
+	case R:
+		ret.m = MyCubeLite::R;
+		break;
+	case U:
+		ret.m = MyCubeLite::U;
+		break;
+	case L:
+		ret.m = MyCubeLite::L;
+		break;
+	case B:
+		ret.m = MyCubeLite::B;
+		break;
+	case D:
+		ret.m = MyCubeLite::D;
+		break;
+	}
+	ret.r = (r.cwturn % 4 + 4) % 4;
+
+	return ret;
 }
