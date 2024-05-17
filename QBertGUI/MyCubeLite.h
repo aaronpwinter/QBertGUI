@@ -20,9 +20,9 @@ public:
 	};
 	
 	//Cube Edge
-	struct CEdge 
+	struct CEdge
 	{
-		CEdge(): e(UR), o(0) {}
+		CEdge() : e(UR), o(0) {}
 		CEdge(Edge e, unsigned o) : e(e), o(o) {}
 		Edge e : 7;	//cur edge
 		unsigned o : 1;	//orientation
@@ -30,7 +30,7 @@ public:
 	//Cube Corner
 	struct CCorner 
 	{
-		CCorner(): c(URF), o(0) {}
+		CCorner() : c(URF), o(0) {}
 		CCorner(Corner c, unsigned o) : c(c), o(o) {}
 		Corner c : 6; //cur corner
 		unsigned o : 2; //orientation
@@ -101,16 +101,31 @@ public:
 private:
 	//Solve variables
 	static inline bool solveInit = false;
-	//Phase 1
+
 	static constexpr inline int CornerOriSize = 2187, EdgeOriSize = 2048, UDSliceSize = 495;
-	static inline int CornerOriSteps[2187];
-	static inline int EdgeOriSteps[2048];
-	static inline int UDSliceSteps[495];
-	//Phase 2
 	static constexpr inline int CornerPermSize = 40320, EdgePermSize = 40320, UDSliceSortedSize = 24;
-	static inline int CornerPermSteps[40320];
-	static inline int EdgePermSteps[40320];
-	static inline int UDSliceSortedSteps[24];
+
+	//Move Tables
+	//Basically want to make a move table too. This maps a move (IE: R1) to a single coord and how it changes (corner ori 4 -> 6)
+	//interesting
+	static inline unsigned CornerOriMove[2187*_countof(phase1Moves)];
+	static inline unsigned EdgeOriMove[2048*_countof(phase1Moves)];
+	static inline unsigned UDSliceMove[495*_countof(phase1Moves)];
+
+	static inline unsigned CornerPermMove[40320*_countof(phase2Moves)];
+	static inline unsigned EdgePermMove[40320*_countof(phase2Moves)];
+	static inline unsigned UDSliceSortedMove[24*_countof(phase2Moves)];
+
+	//Prune Tables
+	//Phase 1
+	static inline byte CornerOriSteps[2187];
+	static inline byte EdgeOriSteps[2048];
+	static inline byte UDSliceSteps[495];
+	//Phase 2
+	static inline byte CornerPermSteps[40320];
+	static inline byte EdgePermSteps[40320];
+	static inline byte UDSliceSortedSteps[24];
+
 
 
 public:
@@ -137,7 +152,8 @@ public:
 
 	//Init Solve (on first MyCube creation)
 	static void initSolve();
-	static void initSolveArray(int* arr, int len, const RotLite* moves, int movesLen, int(*f)(const MyCubeLite&));
+	static void initMoveArray(unsigned* arr, int len, const RotLite* moves, int movesLen, unsigned(*f)(const MyCubeLite&));
+	static void initPruneArray(byte* arr, int len, const RotLite* moves, int movesLen, unsigned(*f)(const MyCubeLite&));
 
 
 	//Phase 1
@@ -145,50 +161,56 @@ public:
 	unsigned getEdgeOriCoord() const;
 	unsigned getUDSliceCoord() const;
 	CoordTriple getPhase1Coords() const { return { getCornerOriCoord(), getEdgeOriCoord(), getUDSliceCoord() }; }
+	static CoordTriple turnPhase1Coords(CoordTriple coords, int phase1MovesIndex);
 
 	bool isG1() const;
+	static bool isG1(CoordTriple coords);
 
 	//Phase 2
+	//All Incorrect if not in G1
 	unsigned getCornerPerm(Corner c) const;
 	unsigned getEdgePerm(Edge e) const;
 
 	unsigned getCornerPermCoord() const;
 	unsigned getEdgePermCoord() const;
 	unsigned getUDSliceSortedCoord() const;
-	//Incorrect if not in G1
 	unsigned getUDSliceSortedCoordLite() const;
 	CoordTriple getPhase2Coords() const { return { getCornerPermCoord(), getEdgePermCoord(), getUDSliceSortedCoordLite() }; }
+	static CoordTriple turnPhase2Coords(CoordTriple coords, int phase2MovesIndex);
 
 	//Incorrect if not in G1
 	bool solved() const;
+	static bool solved(CoordTriple coords);
 
 
 	//Solve Phase 1
 	static int S_stepsFromG1(CoordTriple c);
-	int stepsFromG1() const { return S_stepsFromG1(getPhase1Coords()); };
+	int stepsFromG1() const;
 
 	std::vector<RotLite> solveToG1(int max_depth = MAX_MOVES) const;
 	int searchToG1(std::vector<RotLite> &rots, int g, int bound, int max_depth, RotLite lastRot);
+	int searchToG1(std::vector<RotLite> &rots, CoordTriple coords, int g, int bound, int max_depth, RotLite lastRot);
 
 
 	//Solve Phase 2
 	//Only use when in G1 or probably just not correct
 	static int S_stepsFromSolved(CoordTriple c);
-	int stepsFromSolved() const { return S_stepsFromSolved(getPhase2Coords()); };
+	int stepsFromSolved() const;
 
 	std::vector<RotLite> solveFromG1(int g, RotLite r, int max_depth = MAX_MOVES) const;
 	int searchFromG1(std::vector<RotLite> &rots, int g, int bound, RotLite lastRot);
+	int searchFromG1(std::vector<RotLite> &rots, CoordTriple coords, int g, int bound, RotLite lastRot);
 
 public:
 	//Static Equivalents
-	static int S_getCornerOriCoord(const MyCubeLite& c) { return c.getCornerOriCoord(); };
-	static int S_getEdgeOriCoord(const MyCubeLite& c) { return c.getEdgeOriCoord(); };
-	static int S_getUDSliceCoord(const MyCubeLite& c) { return c.getUDSliceCoord(); };
+	static unsigned S_getCornerOriCoord(const MyCubeLite& c) { return c.getCornerOriCoord(); };
+	static unsigned S_getEdgeOriCoord(const MyCubeLite& c) { return c.getEdgeOriCoord(); };
+	static unsigned S_getUDSliceCoord(const MyCubeLite& c) { return c.getUDSliceCoord(); };
 
-	static int S_getCornerPermCoord(const MyCubeLite& c) { return c.getCornerPermCoord(); };
-	static int S_getEdgePermCoord(const MyCubeLite& c) { return c.getEdgePermCoord(); };
-	static int S_getUDSliceSortedCoord(const MyCubeLite& c) { return c.getUDSliceSortedCoord(); };
-	static int S_getUDSliceSortedCoordLite(const MyCubeLite& c) { return c.getUDSliceSortedCoordLite(); };
+	static unsigned S_getCornerPermCoord(const MyCubeLite& c) { return c.getCornerPermCoord(); };
+	static unsigned S_getEdgePermCoord(const MyCubeLite& c) { return c.getEdgePermCoord(); };
+	static unsigned S_getUDSliceSortedCoord(const MyCubeLite& c) { return c.getUDSliceSortedCoord(); };
+	static unsigned S_getUDSliceSortedCoordLite(const MyCubeLite& c) { return c.getUDSliceSortedCoordLite(); };
 
 private:
 	//Corners
