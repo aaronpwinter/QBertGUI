@@ -188,6 +188,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AlgSaver.h" />
     <ClInclude Include="FunnyCube.h" />
     <ClInclude Include="MyCube.h" />
     <ClInclude Include="MyCubeDefs.h" />
@@ -199,6 +200,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AlgSaver.cpp" />
     <ClCompile Include="FunnyCube.cpp" />
     <ClCompile Include="MyCube.cpp" />
     <ClCompile Include="MyCubeLite.cpp" />

@@ -1,11 +1,26 @@
 optimize solve :)
+    --Made move tables, only array index turns need to be done - still slow :(
+
 unit test
-3d representation of funnycube (in code/data)
-    code/data representation to screen
+
+
 ability to load algs, and have them be registered by name (with tag/other information too)
+        -- Need to add file reading/string processing
 ability to load algs to be in certain sequences, to be played in reverse and then (reverse) solved for training
     srs for alg blocks within the sequence (ie: for oll->pll, type good for oll, bad for pll, and the pll alg is replayed more)
+
+
+
+    
 make logo more like more funnyier
 make gui good (probably learn not MFC)
+3d representation of funnycube (in code/data)
+    code/data representation to screen
+
+
+done:
+
 actually implement color to cube for mr erno's my cube (this should be based off of the center colors of cube, so not hardcoded colors)
     add mroe funny colors !!!!
+    --Can use any color
+    --Can do color to cube - might want to write it nicer (rewrite), but works & has validity check
