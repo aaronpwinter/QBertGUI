@@ -85,10 +85,160 @@ void MyCube::reset()
 	setInfo(Front, 1, 1, Front);
 }
 
-void MyCube::assignPieceInfo()
+bool MyCube::assignPieceInfo()
 {
 	//For any cube, assign the URF, UD... to all of the facelets
 	//yeah idk how to do this at all but you know :) !! If i need to !!
+
+	//center
+	setInfo(Up, 1, 1, Up);
+	setInfo(Left, 1, 1, Left);
+	setInfo(Right, 1, 1, Right);
+	setInfo(Down, 1, 1, Down);
+	setInfo(Back, 1, 1, Back);
+	setInfo(Front, 1, 1, Front);
+
+	COLORREF cUp = getColor(Up, 1, 1), cDown = getColor(Down, 1, 1), cFront = getColor(Front, 1, 1), cBack = getColor(Back, 1, 1),
+		cLeft = getColor(Left, 1, 1), cRight = getColor(Right, 1, 1);
+
+	//corners
+	for (int c = 0; c < NumCorners; ++c)
+	{
+		int ori = getCornerOri(Corner(c));
+		if (ori == -1) return false;
+		COLORREF c1 = getColor(CornerCoord[c][ori]), c2 = getColor(CornerCoord[c][(ori + 1) % 3]), c3 = getColor(CornerCoord[c][(ori + 2) % 3]);
+
+		if (c1 == cUp)
+		{
+			//check up dogs
+			for (int ref = URF; ref < DFR; ++ref)
+			{
+				if (c2 == getColor(CornerCoord[ref][1].s, 1, 1))
+				{
+					if (c3 == getColor(CornerCoord[ref][2].s, 1, 1))
+					{
+						setInfo(CornerCoord[c][0], ref);
+						setInfo(CornerCoord[c][1], ref);
+						setInfo(CornerCoord[c][2], ref);
+						break;
+					}
+					else return false;
+				}
+			}
+		}
+		else 
+		{ //c1 == cDown
+		  //check down
+			for (int ref = DFR; ref < NumCorners; ++ref)
+			{
+				if (c2 == getColor(CornerCoord[ref][1].s, 1, 1))
+				{
+					if (c3 == getColor(CornerCoord[ref][2].s, 1, 1))
+					{
+						setInfo(CornerCoord[c][0], ref);
+						setInfo(CornerCoord[c][1], ref);
+						setInfo(CornerCoord[c][2], ref);
+						break;
+					}
+					else return false;
+				}
+			}
+		}
+	}
+
+	//edges
+	for (int e = 0; e < NumEdges; ++e)
+	{
+		int ori = getEdgeOri(Edge(e));
+		if (ori == -1) return false;
+		COLORREF c1 = getColor(EdgeCoord[e][ori]), c2 = getColor(EdgeCoord[e][(ori + 1) % 2]);
+
+		if (c1 == cUp)
+		{
+			//check up dogs
+			for (int ref = UR; ref < DR; ++ref)
+			{
+				if (c2 == getColor(EdgeCoord[ref][1].s, 1, 1))
+			{
+					setInfo(EdgeCoord[e][0], ref);
+					setInfo(EdgeCoord[e][1], ref);
+				}
+			}
+		}
+		else if (c1 == cDown)
+		{ 
+		  //check down
+			for (int ref = DR; ref < FR; ++ref)
+			{
+				if (c2 == getColor(EdgeCoord[ref][1].s, 1, 1))
+				{
+					setInfo(EdgeCoord[e][0], ref);
+					setInfo(EdgeCoord[e][1], ref);
+				}
+			}
+		}
+		else if (c1 == cFront)
+		{ 
+		  //check front
+			for (int ref = FR; ref < BL; ++ref)
+			{
+				if (c2 == getColor(EdgeCoord[ref][1].s, 1, 1))
+				{
+					setInfo(EdgeCoord[e][0], ref);
+					setInfo(EdgeCoord[e][1], ref);
+				}
+			}
+		}
+		else if (c1 == cBack)
+		{
+			//check front
+			for (int ref = BL; ref < NumEdges; ++ref)
+			{
+				if (c2 == getColor(EdgeCoord[ref][1].s, 1, 1))
+				{
+					setInfo(EdgeCoord[e][0], ref);
+					setInfo(EdgeCoord[e][1], ref);
+				}
+			}
+		}
+	}
+
+	//check if piece count correct
+	int cornerCheck = 0, cornerConfirm = 0;
+	for (int c = 0; c < NumCorners; ++c)
+	{
+		cornerCheck += 1 << getCornerAt(Corner(c)); 
+		cornerConfirm += 1 << c;
+	}
+	if (cornerCheck != cornerConfirm) return false;
+
+	//check if piece count correct
+	int edgeCheck = 0, edgeConfirm = 0;
+	for (int e = 0; e < NumEdges; ++e)
+	{
+		edgeCheck += 1 << getEdgeAt(Edge(e));
+		edgeConfirm += 1 << e;
+	}
+	if (edgeCheck != edgeConfirm) return false;
+
+	//check corner ori
+	int cornerOriCheck = 0;
+	for (int c = 0; c < NumCorners; ++c)
+	{
+		cornerOriCheck += getCornerOri(Corner(c));
+	}
+	if (cornerOriCheck%3 != 0) return false;
+
+	//check edge ori
+	int edgeOriCheck = 0;
+	for (int e = 0; e < NumEdges; ++e)
+	{
+		edgeOriCheck += getEdgeOri(Edge(e));
+	}
+	if (edgeOriCheck % 2 != 0) return false;
+
+
+	return true;
 }
 
 std::vector<MyCube::RotInfo> MyCube::resetOrientation()
@@ -118,13 +268,18 @@ std::vector<MyCube::RotInfo> MyCube::resetOrientation()
 std::vector<MyCube::RotInfo> MyCube::solve(int max_moves) const
 {
 	MyCube c1(*this);
-	std::vector<MyCube::RotInfo> ret = c1.resetOrientation();
+	std::vector<MyCube::RotInfo> ret; //= c1.resetOrientation();
 
-	std::vector<MyCubeLite::RotLite> solve = c1.getLite().solve(max_moves);
-	
-	for (int i = 0; i < solve.size(); ++i)
+	if (c1.assignPieceInfo())
 	{
-		ret.push_back(rotLiteToRot(solve[i]));
+		std::vector<MyCubeLite::RotLite> solve = c1.getLite().solve(max_moves);
+
+
+		for (int i = 0; i < solve.size(); ++i)
+		{
+			ret.push_back(rotLiteToRot(solve[i]));
+		}
+
 	}
 
 	return ret;
@@ -138,10 +293,11 @@ bool MyCube::solved() const
 
 int MyCube::getCornerOri(Corner c) const
 {
-	Color color1 = getColor(CornerCoord[c][0]), color2 = getColor(CornerCoord[c][1]), color3 = getColor(CornerCoord[c][2]);
-	if (color1 == White || color1 == Yellow) return 0;
-	if (color2 == White || color2 == Yellow) return 1;
-	if (color3 == White || color3 == Yellow) return 2;
+	COLORREF colorUp = getColor(Up, 1, 1), colorDown = getColor(Down, 1, 1);
+	COLORREF color1 = getColor(CornerCoord[c][0]), color2 = getColor(CornerCoord[c][1]), color3 = getColor(CornerCoord[c][2]);
+	if (color1 == colorUp || color1 == colorDown) return 0;
+	if (color2 == colorUp || color2 == colorDown) return 1;
+	if (color3 == colorUp || color3 == colorDown) return 2;
 
 	//bad
 	return -1;
@@ -149,443 +305,20 @@ int MyCube::getCornerOri(Corner c) const
 
 int MyCube::getEdgeOri(Edge e) const
 {
-	Color color1 = getColor(EdgeCoord[e][0]), color2 = getColor(EdgeCoord[e][1]);
-	if (color1 == White || color1 == Yellow) return 0;
-	if (color2 == White || color2 == Yellow) return 1;
+	COLORREF colorUp = getColor(Up, 1, 1), colorDown = getColor(Down, 1, 1);
+	COLORREF colorFront = getColor(Front, 1, 1), colorBack = getColor(Back, 1, 1);
+
+	COLORREF color1 = getColor(EdgeCoord[e][0]), color2 = getColor(EdgeCoord[e][1]);
+	if (color1 == colorUp || color1 == colorDown) return 0;
+	if (color2 == colorUp || color2 == colorDown) return 1;
 	//Now using green/blue
-	if (color1 == Green || color1 == Blue) return 0;
-	if (color2 == Green || color2 == Blue) return 1;
+	if (color1 == colorFront || color1 == colorBack) return 0;
+	if (color2 == colorFront || color2 == colorBack) return 1;
 
 	return -1;
 }
-/*
-int MyCube::getCornerPerm(Corner c) const
-{
-	int ret = 0;
-	Corner cur = getCornerAt(c);
-	for (int i = 0; i < c; ++i)
-	{
-		//if corner at i > corner at c
-		if (getCornerAt(Corner(i)) > cur)
-			++ret;
-	}
-	return ret;
-}
 
-int MyCube::getEdgePerm(Edge e) const
-{
-	int ret = 0;
-	Edge cur = getEdgeAt(e);
-	for (int i = 0; i < e; ++i)
-	{
-		//if corner at i > corner at c
-		if (getEdgeAt(Edge(i)) > cur)
-			++ret;
-	}
-	return ret;
-}
 
-void MyCube::initSolve()
-{
-	if (solveInit) return;
-
-	solveInit = true;
-
-	//init the static lists that should store move counts for the variables in those coord triples basically okay bye :)
-	//https://www.reddit.com/r/Cubers/comments/63gitx/anyone_here_implemented_kociembas_two_phase/
-	//https://www.jaapsch.net/puzzles/compcube.htm#tree
-
-	initSolveArray(CornerOriSteps, _countof(CornerOriSteps), phase1Moves, _countof(phase1Moves), &S_getCornerOriCoord);
-	initSolveArray(EdgeOriSteps, _countof(EdgeOriSteps), phase1Moves, _countof(phase1Moves), &S_getEdgeOriCoord);
-	initSolveArray(UDSliceSteps, _countof(UDSliceSteps), phase1Moves, _countof(phase1Moves), &S_getUDSliceCoord);
-	initSolveArray(CornerPermSteps, _countof(CornerPermSteps), phase2Moves, _countof(phase2Moves), &S_getCornerPermCoord);
-	initSolveArray(EdgePermSteps, _countof(EdgePermSteps), phase2Moves, _countof(phase2Moves), &S_getEdgePermCoord);
-	initSolveArray(UDSliceSortedSteps, _countof(UDSliceSortedSteps), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoord);	
-
-}
-
-//This basically puts the estimated lowest number of turns to get to a certain value for the various different values
-void MyCube::initSolveArray(int * arr, int len, const RotInfo * moves, int movesLen, int(*f)(const MyCube&))
-{
-	//init array with lowest num turns being the max
-	for (int i = 0; i < len; ++i) arr[i] = MAX_MOVES;
-
-	//Create a queue of cube states to try
-	std::queue<MyCube> toTry;
-	toTry.push(MyCube());
-	//bookkeeping, the current move count and the remaining number of cubes for this move count
-	int curMoves = -1, remaining = 0, found = 1;
-	arr[0] = 0; //set 0 value to 0 moves :)
-
-	//keep going until no more cubes or no more moves
-	while (!toTry.empty() && curMoves < MAX_MOVES && found < len)
-	{
-		//if no more cubes left in this move count, increment move count
-		if (remaining <= 0)
-		{
-			++curMoves;
-			remaining = int(toTry.size());
-		}
-
-		//try all possible moves on current cube state
-		for (int i = 0; i < movesLen; ++i)
-		{
-			MyCube temp(toTry.front());
-
-			temp.turn(moves[i]);
-			int tempVal = f(temp);
-
-			//if the value for this TURNED cube state is less than (honestly only happens on MAX_MOVES) the currently logged value...
-			if (curMoves + 1 < arr[tempVal])
-			{
-				// ...then replace logged value and add cube state
-				arr[tempVal] = curMoves + 1;
-				toTry.push(temp);
-
-				++found;
-			}
-		}
-
-		//next cube !!
-		toTry.pop();
-		--remaining;
-	}
-}
-
-
-int MyCube::getCornerOriCoord() const
-{
-	///*
-	https://kociemba.org/math/coordlevel.htm#cornoridef
-	function CubieCube.CornOriCoord:Word;
-	var co: Corner; s: Word;
-	begin
-	s:=0;
-	for co:= URF to Pred(DRB) do s:= 3*s + PCorn^[co].o;
-	Result:= s;
-	end;
-	//
-	int ret = 0;
-	for (int c = 0; c < DRB; ++c)
-	{
-		ret = 3 * ret + getCornerOri(Corner(c));
-	}
-
-	return ret;
-}
-
-int MyCube::getEdgeOriCoord() const
-{
-	/*
-	https://kociemba.org/math/coordlevel.htm#edgeoridef
-	function CubieCube.EdgeOriCoord:Word;
-	var ed: Edge; s: Word;
-	begin
-	s:=0;
-	for ed:= UR to Pred(BR) do s:= 2*s + PEdge^[ed].o;
-	Result:= s;
-	end;
-	/
-	int ret = 0;
-	for (int e = 0; e < BR; ++e)
-	{
-		ret = 2 * ret + getEdgeOri(Edge(e));
-	}
-
-	return ret;
-}
-
-int MyCube::getUDSliceCoord() const
-{
-	/*
-	https://kociemba.org/math/twophase.htm#udslicedef
-	function CubieCube.UDSliceCoord;
-	var s: Word; k,n: Integer; occupied: array[0..11] of boolean; ed: Edge;
-	begin
-	for n:= 0 to 11 do occupied[n]:=false;
-	for ed:=UR to BR do if PEdge^[ed].e >= FR then occupied[Word(ed)]:=true;
-	s:=0; k:=3; n:=11;
-	while k>= 0 do
-	begin
-	if occupied[n] then Dec(k)
-	else s:= s + C(n,k);
-	Dec(n);
-	end;
-	Result:= s;
-	end;
-	/
-	int ret = 0, n = NumEdges-1, k = 3;
-
-	bool udSliceIn[NumEdges];
-	for (int e = 0; e < NumEdges; ++e)
-	{
-		udSliceIn[e] = getEdgeAt(Edge(e)) >= FR;
-	}
-
-	while (k >= 0 && n >= 0)
-	{
-		if (udSliceIn[n]) --k;
-		else ret += mathCombo(n, k);
-
-		--n;
-	}
-
-	return ret;
-}
-
-bool MyCube::isG1() const
-{
-	CoordTriple c = getPhase1Coords();
-	return (c.x1 == 0) && (c.x2 == 0) && (c.x3 == 0);
-}
-
-int MyCube::S_stepsFromG1(CoordTriple c)
-{
-	int s1 = CornerOriSteps[c.x1];
-	int s2 = EdgeOriSteps[c.x2];
-	int s3 = UDSliceSteps[c.x3];
-
-	if (s1 > s2 && s1 > s3) return s1;
-	if (s2 > s3) return s2;
-	return s3;
-}
-
-std::vector<MyCube::RotInfo> MyCube::solveToG1(int max_depth) const
-{
-	std::vector<RotInfo> rots;
-
-	int bound = stepsFromG1();
-
-	while (bound < max_depth)
-	{
-		bound = searchToG1(rots, 0, bound, max_depth);
-	}
-
-	return rots;
-}
-
-int MyCube::searchToG1(std::vector<RotInfo>& rots, int g, int bound, int max_depth) const
-{
-	int f = g + stepsFromG1();
-
-	if (f > bound) return f;
-	if (isG1()) return MAX_MOVES;
-
-	int min = MAX_MOVES;
-
-	for (int i = 0; i < _countof(phase1Moves); ++i)
-	{
-		RotInfo r = phase1Moves[i];
-		if (rots.empty() || rots.back().m != r.m)
-		{
-			rots.push_back(r);
-
-			MyCube temp(*this);
-			temp.turn(r);
-
-			int tempMin = temp.searchToG1(rots, g + 1, bound, max_depth);
-			if (tempMin >= MAX_MOVES)
-			{
-				if (temp.isG1())
-				{
-					std::vector<RotInfo> r2 = temp.solveFromG1(max_depth - g);
-					temp.turn(r2);
-					if (temp.solved())
-					{
-						rots.insert(rots.end(), r2.begin(), r2.end());
-						return tempMin;
-					}
-				}
-				else
-				{
-					return tempMin;
-				}
-				
-			}
-			if (tempMin < min) min = tempMin;
-
-			rots.pop_back();
-		}
-	}
-	return min;
-}
-
-
-int MyCube::getCornerPermCoord() const
-{
-	/*
-	https://kociemba.org/math/coordlevel.htm#cornpermdef
-	function CubieCube.CornPermCoord: Word;
-	var i,j: Corner; x,s: Integer;
-	begin
-	x:= 0;
-	for i:= DRB downto Succ(URF) do
-	begin
-	s:=0;
-	for j:= Pred(i) downto URF do
-	begin
-	if PCorn^[j].c>PCorn^[i].c then Inc(s);
-	end;
-	x:= (x+s)*Ord(i);
-	end;
-	Result:=x;
-	end;
-	/
-	int ret = 0;
-	for (int c = DRB; c > URF; --c)
-	{
-		ret = (ret + getCornerPerm(Corner(c))) * c;
-	}
-
-	return ret;
-}
-
-int MyCube::getEdgePermCoord() const 
-{
-	/*
-	https://kociemba.org/math/twophase.htm#phase2edge
-	function CubieCube.Phase2EdgePermCoord: Word;
-	var i,j: Edge; x,s: Integer;
-	begin
-	x:= 0;
-	for i:= DB downto Succ(UR) do
-	begin
-	s:=0;
-	for j:= Pred(i) downto UR do
-	begin
-	if PEdge^[j].e>PEdge^[i].e then Inc(s);
-	end;
-	x:= (x+s)*Ord(i);
-	end;
-	Result:=x;
-	end;
-	/
-	int ret = 0;
-	for (int e = DB; e > UR; --e)
-	{
-		ret = (ret + getEdgePerm(Edge(e))) * e;
-	}
-
-	return ret;
-}
-
-int MyCube::getUDSliceSortedCoord() const
-{
-	/*
-	https://kociemba.org/math/twophase.htm#phase2udslice
-	function CubieCube.UDSliceSortedCoord: Word;
-
-	var j,k,s,x: Integer; i,e: Edge; arr: array[0..3] of Edge;
-	begin
-	j:=0;
-	for i:= UR to BR do
-	begin
-	e:=PEdge^[i].e;
-	if (e=FR) or (e=FL) or (e=BL) or (e=BR) then begin arr[j]:= e; Inc(j); end;
-	end;
-
-	x:= 0;
-	for j:= 3 downto 1 do
-	begin
-	s:=0;
-	for k:= j-1 downto 0 do
-	begin
-	if arr[k]>arr[j] then Inc(s);
-	end;
-	x:= (x+s)*j;
-	end;
-	Result:= UDSliceCoord*24 + x;
-	end;
-	/
-	int ret = 0;
-
-	Edge edges[4];
-	int j = 0;
-	for (int i = UR; i <= BR; ++i)
-	{
-		Edge e = getEdgeAt(Edge(i));
-		if (e == FR || e == FL || e == BL || e == BR)
-		{
-			edges[j] = e;
-			++j;
-		}
-	}
-
-	for (int i = 3; i >= 1; --i)
-	{
-		int s = 0;
-		for (int j = i - 1; j >= 0; --j)
-		{
-			if (edges[j] > edges[i]) ++s;
-		}
-		ret = (ret + s)*i;
-	}
-
-	return getUDSliceCoord()*24 + ret;
-}
-
-bool MyCube::solved() const
-{
-	CoordTriple c = getPhase2Coords();
-	return (c.x1 == 0) && (c.x2 == 0) && (c.x3 == 0);
-}
-
-int MyCube::S_stepsFromSolved(CoordTriple c)
-{
-	int s1 = CornerPermSteps[c.x1];
-	int s2 = EdgePermSteps[c.x2];
-	int s3 = UDSliceSortedSteps[c.x3];
-
-	if (s1 > s2 && s1 > s3) return s1;
-	if (s2 > s3) return s2;
-	return s3;
-}
-
-std::vector<MyCube::RotInfo> MyCube::solveFromG1(int max_depth) const
-{
-	std::vector<RotInfo> rots;
-
-	if (!isG1()) return rots;
-
-	int bound = stepsFromSolved();
-
-	while (bound < max_depth)
-	{
-		bound = searchFromG1(rots, 0, bound);
-	}
-
-	return rots;
-}
-
-int MyCube::searchFromG1(std::vector<RotInfo>& rots, int g, int bound) const
-{
-	int f = g + stepsFromSolved();
-
-	if (f > bound) return f;
-	if (solved()) return MAX_MOVES;
-
-	int min = MAX_MOVES;
-
-	for (int i = 0; i < _countof(phase2Moves); ++i)
-	{
-		RotInfo r = phase2Moves[i];
-		if (rots.empty() || rots.back().m != r.m)
-		{
-			rots.push_back(r);
-
-			MyCube temp(*this);
-			temp.turn(r);
-
-			int tempMin = temp.searchFromG1(rots, g + 1, bound);
-			if (tempMin >= MAX_MOVES) return tempMin;
-			if (tempMin < min) min = tempMin;
-
-			rots.pop_back();
-		}
-	}
-	return min;
-}
-*/
 
 MyCubeLite::RotLite MyCube::rotToRotLite(RotInfo r)
 {

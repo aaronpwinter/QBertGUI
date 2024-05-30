@@ -39,7 +39,7 @@ MyCubeLite::MyCubeLite(const MyCubeLite & c)
 	//corners
 	for (int i = 0; i < NumCorners; ++i)
 	{
-		m_cs[i] =  c.m_cs[i];
+		m_cs[i] = c.m_cs[i];
 	}
 	//edges
 	for (int i = 0; i < NumEdges; ++i)
@@ -93,15 +93,15 @@ void MyCubeLite::turn(RotLite r)
 
 	//rotate
 	CCorner tempc[4] =
-		{m_cs[CornerTurnOrder[r.m][4-r.r]], 
-		m_cs[CornerTurnOrder[r.m][(5-r.r) & 3]],
-		m_cs[CornerTurnOrder[r.m][(6-r.r) & 3]],
-		m_cs[CornerTurnOrder[r.m][3-r.r]], };
+	{ m_cs[CornerTurnOrder[r.m][4 - r.r]],
+		m_cs[CornerTurnOrder[r.m][(5 - r.r) & 3]],
+		m_cs[CornerTurnOrder[r.m][(6 - r.r) & 3]],
+		m_cs[CornerTurnOrder[r.m][3 - r.r]], };
 	CEdge tempe[4] =
-		{m_es[EdgeTurnOrder[r.m][4 - r.r]],
+	{ m_es[EdgeTurnOrder[r.m][4 - r.r]],
 		m_es[EdgeTurnOrder[r.m][(5 - r.r) & 3]],
 		m_es[EdgeTurnOrder[r.m][(6 - r.r) & 3]],
-		m_es[EdgeTurnOrder[r.m][3 - r.r]],};
+		m_es[EdgeTurnOrder[r.m][3 - r.r]], };
 
 	m_cs[CornerTurnOrder[r.m][0]] = tempc[0];
 	m_cs[CornerTurnOrder[r.m][1]] = tempc[1];
@@ -125,21 +125,21 @@ void MyCubeLite::turn(std::vector<RotLite> rots)
 std::vector<MyCubeLite::RotLite> MyCubeLite::solve(int max_moves) const
 {
 	std::vector<RotLite> ret = solveToG1(max_moves);
-	
+
 	MyCubeLite copy(*this);
 	copy.turn(ret);
 
-	
+
 	if (copy.isG1())
 	{
-		std::vector<RotLite> r2 = copy.solveFromG1(ret.size(), (ret.empty() ? RotLite{R, 0} : ret.back()), max_moves);
+		std::vector<RotLite> r2 = solveFromG1(copy.getPhase2Coords(), ret.size(), (ret.empty() ? RotLite{ R, 0 } : ret.back()), max_moves);
 		copy.turn(r2);
 		if (copy.solved())
 		{
 			ret.insert(ret.end(), r2.begin(), r2.end());
 		}
 	}
-	
+
 	return ret;
 }
 
@@ -164,7 +164,7 @@ unsigned MyCubeLite::getEdgePerm(Edge e) const
 	{
 		//if edge at i > edge at e
 		if (m_es[i].e > cur)
-			++ret; 
+			++ret;
 	}
 	return ret;
 }
@@ -179,11 +179,17 @@ void MyCubeLite::initSolve()
 	initMoveArray(CornerOriMove, _countof(CornerOriMove), phase1Moves, _countof(phase1Moves), &S_getCornerOriCoord);
 	initMoveArray(EdgeOriMove, _countof(EdgeOriMove), phase1Moves, _countof(phase1Moves), &S_getEdgeOriCoord);
 	initMoveArray(UDSliceMove, _countof(UDSliceMove), phase1Moves, _countof(phase1Moves), &S_getUDSliceCoord);
+
+	initMoveArray(P1CornerPermMove, _countof(P1CornerPermMove), phase1Moves, _countof(phase1Moves), &S_getCornerPermCoord);
+	initMoveArray(P1UDSliceSortedMove, _countof(P1UDSliceSortedMove), phase1Moves, _countof(phase1Moves), &S_getUDSliceSortedCoord);
+	initMoveArray(P1RLSliceSortedMove, _countof(P1RLSliceSortedMove), phase1Moves, _countof(phase1Moves), &S_getRLSliceSortedCoord);
+	initMoveArray(P1FBSliceSortedMove, _countof(P1FBSliceSortedMove), phase1Moves, _countof(phase1Moves), &S_getFBSliceSortedCoord);
+
 	initMoveArray(CornerPermMove, _countof(CornerPermMove), phase2Moves, _countof(phase2Moves), &S_getCornerPermCoord);
 	initMoveArray(EdgePermMove, _countof(EdgePermMove), phase2Moves, _countof(phase2Moves), &S_getEdgePermCoord);
-	initMoveArray(UDSliceSortedMove, _countof(UDSliceSortedMove), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoordLite);
+	initMoveArray(UDSliceSortedLiteMove, _countof(UDSliceSortedLiteMove), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoordLite);
 
-
+	initEdge8Perm();
 
 	//Prune Tables
 	//init the static lists that should store move counts for the variables in those coord triples basically okay bye :)
@@ -195,7 +201,7 @@ void MyCubeLite::initSolve()
 	initPruneArray(UDSliceSteps, _countof(UDSliceSteps), phase1Moves, _countof(phase1Moves), &S_getUDSliceCoord);
 	initPruneArray(CornerPermSteps, _countof(CornerPermSteps), phase2Moves, _countof(phase2Moves), &S_getCornerPermCoord);
 	initPruneArray(EdgePermSteps, _countof(EdgePermSteps), phase2Moves, _countof(phase2Moves), &S_getEdgePermCoord);
-	initPruneArray(UDSliceSortedSteps, _countof(UDSliceSortedSteps), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoordLite);
+	initPruneArray(UDSliceSortedLiteSteps, _countof(UDSliceSortedLiteSteps), phase2Moves, _countof(phase2Moves), &S_getUDSliceSortedCoordLite);
 }
 
 void MyCubeLite::initMoveArray(unsigned * arr, int len, const RotLite * moves, int movesLen, unsigned(*f)(const MyCubeLite &))
@@ -232,13 +238,57 @@ void MyCubeLite::initMoveArray(unsigned * arr, int len, const RotLite * moves, i
 				temp.turn(moves[i]);
 				int tempVal = f(temp);
 
-				arr[coord*movesLen+i] = tempVal;
+				arr[coord*movesLen + i] = tempVal;
 
 				//if the value for this TURNED cube state is less than (honestly only happens on MAX_MOVES) the currently logged value...
 				if (arr[tempVal*movesLen] == -1)
 				{
 					toTry.push(temp);
 				}
+			}
+		}
+
+		//next cube !!
+		toTry.pop();
+	}
+}
+
+void MyCubeLite::initEdge8Perm()
+{
+	int len = _countof(GetEdge8Perm);
+
+	//init array with lowest num turns being the max
+	for (int i = 0; i < len; ++i)
+	{
+		GetEdge8Perm[i] = -1;
+	}
+
+
+	//Create a queue of cube states to try
+	std::queue<MyCubeLite> toTry;
+	toTry.push(MyCubeLite());
+
+	int found = 0;
+
+	//keep going until no more cubes or no more moves
+	while (!toTry.empty() && found < len)
+	{
+		MyCubeLite front(toTry.front());
+		//try all possible moves on current cube state
+		for (int i = 0; i < _countof(phase2Moves); ++i)
+		{
+			MyCubeLite temp(front);
+			temp.turn(phase2Moves[i]);
+
+			unsigned rlCoord = temp.getRLSliceSortedCoord();
+			unsigned fbCoord = temp.getFBSliceSortedCoord();
+
+			if (GetEdge8Perm[rlCoord*24 + fbCoord%24] == -1)
+			{
+				GetEdge8Perm[rlCoord * 24 + fbCoord % 24] = temp.getEdgePermCoord();
+
+				toTry.push(temp);
+				found++;				
 			}
 		}
 
@@ -259,7 +309,7 @@ void MyCubeLite::initPruneArray(byte * arr, int len, const RotLite * moves, int 
 	int curMoves = -1, remaining = 0, found = 1;
 	arr[f(toTry.front())] = 0; //set 0 value to 0 moves :)
 
-				//keep going until no more cubes or no more moves
+							   //keep going until no more cubes or no more moves
 	while (!toTry.empty() && curMoves < MAX_MOVES && found < len)
 	{
 		//if no more cubes left in this move count, increment move count
@@ -309,7 +359,7 @@ unsigned MyCubeLite::getEdgeOriCoord() const
 	unsigned ret = 0;
 	for (unsigned e = 0; e < BR; ++e)
 	{
-		ret = (ret<<1) + m_es[e].o;
+		ret = (ret << 1) + m_es[e].o;
 	}
 	return ret;
 }
@@ -317,7 +367,7 @@ unsigned MyCubeLite::getEdgeOriCoord() const
 unsigned MyCubeLite::getUDSliceCoord() const
 {
 	int ret = 0, n = NumEdges - 1, k = 3;
-	
+
 	while (k >= 0 && n >= 0)
 	{
 		//If edge at e is FR or after, then do funny business
@@ -330,11 +380,98 @@ unsigned MyCubeLite::getUDSliceCoord() const
 	return ret;
 }
 
+unsigned MyCubeLite::getRLSliceCoord() const
+{
+	int ret = 0, n = NumEdges - 1, k = 3;
+
+	while (k >= 0 && n >= 0)
+	{
+		Edge e = m_es[n].e;
+		if (e == UF || e == UB || e == DB || e == DF) --k;
+		else ret += mathCombo(n, k);
+
+		--n;
+	}
+
+	return ret;
+}
+
+unsigned MyCubeLite::getFBSliceCoord() const
+{
+	int ret = 0, n = NumEdges - 1, k = 3;
+
+	while (k >= 0 && n >= 0)
+	{
+		Edge e = m_es[n].e;
+		if (e == UR || e == UL || e == DL || e == DR) --k;
+		else ret += mathCombo(n, k);
+
+		--n;
+	}
+
+	return ret;
+}
+
+unsigned MyCubeLite::getFlipUDSliceCoord() const
+{
+	/*
+	function CubieCube.FlipUDSliceCoord: Integer;
+	var k, n, coord: Integer; prod: EdgeCubie; c, d: CubieCube;
+	begin
+		c : = CubieCube.Create;
+		d: = CubieCube.Create;
+		c.InvUDSliceCoord(UDSliceCoord);
+		c.InvEdgeOriCoord(EdgeOriCoord);
+		Result: = -1;
+		for k: = 0 to 15 do
+			begin
+				EdgeMult(EdgeSym[k], c.PEdge^, prod);
+				EdgeMult(prod, EdgeSym[InvIdx[k]], d.PEdge^);
+				n: = 2048 * d.UDSliceCoord + d.EdgeOriCoord;//raw coordinate
+				coord: = FlipUDSliceRawCoordClassIndex(n);
+				if coord<>-1 then
+					begin
+						Result : = coord shl 4 + k;
+						break;
+					end;
+			end;
+		assert(Result<>-1);
+		c.Free;
+		d.Free;
+	end;
+	*/
+	int ret = -1;
+	int coord;
+	MyCubeLite c(*this);
+
+	for (int i = 0; i < 16; ++i)
+	{
+		//MyCubeLite temp = EdgeMult(EdgeSym[i], c);
+		//MyCubeLite d = EdgeMult(temp, EdgeSym[InvIdx[i]]);
+		//int n = 2048 * d.getUDSliceCoord() + d.getEdgeOriCoord();
+		//coord = FlipUDSliceRawCoordClassIndex(n);
+		//if (coord = !- 1)
+		//{
+		//	ret = coord<<4 + i;
+		//	break;
+		//}
+	}
+	return ret;
+}
+
 CoordTriple MyCubeLite::turnPhase1Coords(CoordTriple coords, int phase1MovesIndex)
 {
-	return {CornerOriMove[coords.x1*_countof(phase1Moves)+phase1MovesIndex], 
-		EdgeOriMove[coords.x2*_countof(phase1Moves) + phase1MovesIndex], 
-		UDSliceMove[coords.x3*_countof(phase1Moves) + phase1MovesIndex]};
+	return { CornerOriMove[coords.x1*_countof(phase1Moves) + phase1MovesIndex],
+		EdgeOriMove[coords.x2*_countof(phase1Moves) + phase1MovesIndex],
+		UDSliceMove[coords.x3*_countof(phase1Moves) + phase1MovesIndex] };
+}
+
+MyCubeLite::Phase1Info MyCubeLite::turnPhase1Info(Phase1Info info, int phase1MovesIndex)
+{
+	return { P1CornerPermMove[info.cornerPerm*_countof(phase1Moves) + phase1MovesIndex],
+		P1UDSliceSortedMove[info.udSlice*_countof(phase1Moves) + phase1MovesIndex],
+		P1RLSliceSortedMove[info.rlSlice*_countof(phase1Moves) + phase1MovesIndex],
+		P1FBSliceSortedMove[info.fbSlice*_countof(phase1Moves) + phase1MovesIndex] };
 }
 
 bool MyCubeLite::isG1() const
@@ -380,7 +517,7 @@ unsigned MyCubeLite::getUDSliceSortedCoord() const
 	for (int i = UR; i <= BR; ++i)
 	{
 		Edge e = m_es[i].e;
-		if (e >= FR) //== FR || e == FL || e == BL || e == BR)
+		if (e == FR || e == FL || e == BL || e == BR)
 		{
 			edges[j] = e;
 			++j;
@@ -400,6 +537,64 @@ unsigned MyCubeLite::getUDSliceSortedCoord() const
 	return getUDSliceCoord() * 24 + ret;
 }
 
+unsigned MyCubeLite::getRLSliceSortedCoord() const
+{
+	int ret = 0;
+
+	Edge edges[4];
+	int j = 0;
+	for (int i = UR; i <= BR; ++i)
+	{
+		Edge e = m_es[i].e;
+		if (e == UF || e == UB || e == DB || e == DF)
+		{
+			edges[j] = e;
+			++j;
+		}
+	}
+
+	for (int i = 3; i >= 1; --i)
+	{
+		int s = 0;
+		for (int j = i - 1; j >= 0; --j)
+		{
+			if (edges[j] > edges[i]) ++s;
+		}
+		ret = (ret + s)*i;
+	}
+
+	return getRLSliceCoord() * 24 + ret;
+}
+
+unsigned MyCubeLite::getFBSliceSortedCoord() const
+{
+	int ret = 0;
+
+	Edge edges[4];
+	int j = 0;
+	for (int i = UR; i <= BR; ++i)
+	{
+		Edge e = m_es[i].e;
+		if (e == UR || e == UL || e == DL || e == DR)
+		{
+			edges[j] = e;
+			++j;
+		}
+	}
+
+	for (int i = 3; i >= 1; --i)
+	{
+		int s = 0;
+		for (int j = i - 1; j >= 0; --j)
+		{
+			if (edges[j] > edges[i]) ++s;
+		}
+		ret = (ret + s)*i;
+	}
+
+	return getFBSliceCoord() * 24 + ret;
+}
+
 unsigned MyCubeLite::getUDSliceSortedCoordLite() const
 {
 	int ret = 0;
@@ -411,7 +606,7 @@ unsigned MyCubeLite::getUDSliceSortedCoordLite() const
 		{
 			if (m_es[j].e > m_es[i].e) ++s;
 		}
-		ret = (ret + s)*(i-FR);
+		ret = (ret + s)*(i - FR);
 	}
 
 	return ret;
@@ -421,7 +616,17 @@ CoordTriple MyCubeLite::turnPhase2Coords(CoordTriple coords, int phase2MovesInde
 {
 	return { CornerPermMove[coords.x1*_countof(phase2Moves) + phase2MovesIndex],
 		EdgePermMove[coords.x2*_countof(phase2Moves) + phase2MovesIndex],
-		UDSliceSortedMove[coords.x3*_countof(phase2Moves) + phase2MovesIndex] };
+		UDSliceSortedLiteMove[coords.x3*_countof(phase2Moves) + phase2MovesIndex] };
+}
+
+unsigned MyCubeLite::RLFBSliceSortedToEdgePerm(unsigned rlSlice, unsigned fbSlice)
+{
+	return GetEdge8Perm[rlSlice * 24 + fbSlice % 24];
+}
+
+CoordTriple MyCubeLite::phase1InfoToPhase2Coords(Phase1Info p1Info)
+{
+	return { p1Info.cornerPerm, RLFBSliceSortedToEdgePerm(p1Info), p1Info.udSlice };
 }
 
 bool MyCubeLite::solved() const
@@ -447,9 +652,9 @@ int MyCubeLite::S_stepsFromG1(CoordTriple c)
 
 int MyCubeLite::stepsFromG1() const
 {
-	int s1 = CornerOriSteps[ getCornerOriCoord() ];
-	int s2 = EdgeOriSteps[ getEdgeOriCoord() ];
-	int s3 = UDSliceSteps[ getUDSliceCoord() ];
+	int s1 = CornerOriSteps[getCornerOriCoord()];
+	int s2 = EdgeOriSteps[getEdgeOriCoord()];
+	int s3 = UDSliceSteps[getUDSliceCoord()];
 
 	if (s1 > s2 && s1 > s3) return s1;
 	if (s2 > s3) return s2;
@@ -459,18 +664,23 @@ int MyCubeLite::stepsFromG1() const
 std::vector<MyCubeLite::RotLite> MyCubeLite::solveToG1(int max_depth) const
 {
 	std::vector<RotLite> rots;
-	MyCubeLite copy(*this);
+	int bound = stepsFromG1();
 
-	int bound = copy.stepsFromG1();
-
-	while (bound < max_depth)
+	while (bound <= max_depth)
 	{
-		bound = copy.searchToG1(rots, copy.getPhase1Coords(), 0, bound, max_depth, {R, 0});
+		bound = searchToG1(rots, getPhase1Coords(), getPhase1Info(), 0, bound, max_depth, { R, 0 });
 	}
 
-	return rots;
+	std::vector<RotLite> ret;
+	for (int i = rots.size() - 1; i >= 0; --i)
+	{
+		ret.push_back(rots[i]);
+	}
+
+	return ret;
 }
 
+/*
 int MyCubeLite::searchToG1(std::vector<RotLite>& rots, int g, int bound, int max_depth, RotLite lastRot)
 {
 	int f = g + stepsFromG1();
@@ -490,11 +700,11 @@ int MyCubeLite::searchToG1(std::vector<RotLite>& rots, int g, int bound, int max
 
 			int tempMin = searchToG1(rots, g + 1, bound, max_depth, r);
 			if (tempMin >= MAX_MOVES)
-			//{
-			//	rots.push_back(r);
-			//	return tempMin;
-			//}
-			
+				//{
+				//	rots.push_back(r);
+				//	return tempMin;
+				//}
+
 			{
 				if (isG1())
 				{
@@ -519,7 +729,7 @@ int MyCubeLite::searchToG1(std::vector<RotLite>& rots, int g, int bound, int max
 				}
 
 			}
-			
+
 			if (tempMin < min) min = tempMin;
 
 			turn(r.reversed());
@@ -527,44 +737,46 @@ int MyCubeLite::searchToG1(std::vector<RotLite>& rots, int g, int bound, int max
 	}
 	return min;
 }
+*/
 
-int MyCubeLite::searchToG1(std::vector<RotLite>& rots, CoordTriple coords, int g, int bound, int max_depth, RotLite lastRot)
+int MyCubeLite::searchToG1(std::vector<RotLite>& rots, CoordTriple coords, Phase1Info p1Info, int g, int bound, int max_depth, RotLite lastRot)
 {
 	int f = g + S_stepsFromG1(coords);
 
 	if (f > bound) return f;
-	if (isG1(coords)) return MAX_MOVES;
+	if (isG1(coords)) return max_depth +1;
 
-	int min = MAX_MOVES;
+	int min = max_depth+1;
 
 	for (int i = 0; i < _countof(phase1Moves); ++i)
 	{
 		RotLite r = phase1Moves[i];
 		if (g == 0 || lastRot.m != r.m)
 		{
-			rots.push_back(r);
+			//rots.push_back(r);
 			CoordTriple newCoords = turnPhase1Coords(coords, i);
+			Phase1Info newInfo = turnPhase1Info(p1Info, i);
 
-			int tempMin = searchToG1(rots, newCoords, g + 1, bound, max_depth, r);
-			if (tempMin >= MAX_MOVES)
+			int tempMin = searchToG1(rots, newCoords, newInfo, g + 1, bound, max_depth, r);
+			if (tempMin > max_depth)
 			{
 				if (isG1(newCoords))
 				{
-					MyCubeLite temp(*this);
-					temp.turn(rots);
-					std::vector<RotLite> r2 = temp.solveFromG1(g, r, max_depth);
-					temp.turn(r2);
-					if (temp.solved())
+					CoordTriple p2 = phase1InfoToPhase2Coords(newInfo);
+					std::vector<RotLite> r2 = solveFromG1(p2, g, r, max_depth);
+					if(solved(p2) || !r2.empty())
 					{
-						for (int i = 0; i < r2.size(); ++i)
+						for (int j = 0; j < r2.size(); ++j)
 						{
-							rots.push_back(r2[i]);
+							rots.push_back(r2[r2.size()-j-1]);
 						}
+						rots.push_back(r);
 						return tempMin;
 					}
 				}
 				else
 				{
+					rots.push_back(r);
 					return tempMin;
 				}
 
@@ -572,7 +784,7 @@ int MyCubeLite::searchToG1(std::vector<RotLite>& rots, CoordTriple coords, int g
 
 			if (tempMin < min) min = tempMin;
 
-			rots.pop_back();
+			//rots.pop_back();
 		}
 	}
 	return min;
@@ -582,7 +794,7 @@ int MyCubeLite::S_stepsFromSolved(CoordTriple c)
 {
 	int s1 = CornerPermSteps[c.x1];
 	int s2 = EdgePermSteps[c.x2];
-	int s3 = UDSliceSortedSteps[c.x3];
+	int s3 = UDSliceSortedLiteSteps[c.x3];
 
 	if (s1 > s2 && s1 > s3) return s1;
 	if (s2 > s3) return s2;
@@ -591,15 +803,16 @@ int MyCubeLite::S_stepsFromSolved(CoordTriple c)
 
 int MyCubeLite::stepsFromSolved() const
 {
-	int s1 = CornerPermSteps[ getCornerPermCoord() ];
-	int s2 = EdgePermSteps[ getEdgePermCoord() ];
-	int s3 = UDSliceSortedSteps[ getUDSliceSortedCoordLite() ];
+	int s1 = CornerPermSteps[getCornerPermCoord()];
+	int s2 = EdgePermSteps[getEdgePermCoord()];
+	int s3 = UDSliceSortedLiteSteps[getUDSliceSortedCoordLite()];
 
 	if (s1 > s2 && s1 > s3) return s1;
 	if (s2 > s3) return s2;
 	return s3;
 }
 
+/*
 std::vector<MyCubeLite::RotLite> MyCubeLite::solveFromG1(int g, RotLite r, int max_depth) const
 {
 	std::vector<RotLite> rots;
@@ -607,12 +820,34 @@ std::vector<MyCubeLite::RotLite> MyCubeLite::solveFromG1(int g, RotLite r, int m
 
 	if (!copy.isG1()) return rots;
 
-	int bound = g+stepsFromSolved();
+	int bound = g + stepsFromSolved();
 
 	while (bound < max_depth)
 	{
 		//bound = copy.searchFromG1(rots, g, bound, r);
-		bound = copy.searchFromG1(rots, copy.getPhase2Coords(), g, bound, r);
+		bound = copy.searchFromG1(rots, copy.getPhase2Coords(), g, bound, r, max_depth);
+	}
+
+	std::vector<RotLite> ret;
+	for (int i = rots.size() - 1; i >= 0; --i)
+	{
+		ret.push_back(rots[i]);
+	}
+
+	return ret;
+}
+*/
+
+std::vector<MyCubeLite::RotLite> MyCubeLite::solveFromG1(CoordTriple coords, int g, RotLite r, int max_depth)
+{
+	std::vector<RotLite> rots;
+
+	int bound = g + S_stepsFromSolved(coords);
+
+	while (bound <= max_depth)
+	{
+		//bound = copy.searchFromG1(rots, g, bound, r);
+		bound = searchFromG1(rots, coords, g, bound, r, max_depth);
 	}
 
 	std::vector<RotLite> ret;
@@ -624,14 +859,15 @@ std::vector<MyCubeLite::RotLite> MyCubeLite::solveFromG1(int g, RotLite r, int m
 	return ret;
 }
 
-int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, int g, int bound, RotLite lastRot)
+/*
+int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, int g, int bound, RotLite lastRot, int max_depth)
 {
 	int f = g + stepsFromSolved();
 
 	if (f > bound) return f;
-	if (solved()) return MAX_MOVES;
+	if (solved()) return max_depth+1;
 
-	int min = MAX_MOVES;
+	int min = max_depth+1;
 
 	for (int i = 0; i < _countof(phase2Moves); ++i)
 	{
@@ -640,8 +876,8 @@ int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, int g, int bound, RotLi
 		{
 			turn(r);
 
-			int tempMin = searchFromG1(rots, g + 1, bound, r);
-			if (tempMin >= MAX_MOVES)
+			int tempMin = searchFromG1(rots, g + 1, bound, r,max_depth);
+			if (tempMin > max_depth)
 			{
 				rots.push_back(r);
 				return tempMin;
@@ -653,15 +889,16 @@ int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, int g, int bound, RotLi
 	}
 	return min;
 }
+*/
 
-int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, CoordTriple coords, int g, int bound, RotLite lastRot)
+int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, CoordTriple coords, int g, int bound, RotLite lastRot, int max_depth)
 {
 	int f = g + S_stepsFromSolved(coords);
 
 	if (f > bound) return f;
-	if (solved(coords)) return MAX_MOVES;
+	if (solved(coords)) return max_depth+ MAX_MOVES;
 
-	int min = MAX_MOVES;
+	int min = max_depth+MAX_MOVES;
 
 	for (int i = 0; i < _countof(phase2Moves); ++i)
 	{
@@ -670,16 +907,31 @@ int MyCubeLite::searchFromG1(std::vector<RotLite>& rots, CoordTriple coords, int
 		{
 			CoordTriple newCoords = turnPhase2Coords(coords, i);
 
-			int tempMin = searchFromG1(rots, newCoords, g + 1, bound, r);
-			if (tempMin >= MAX_MOVES)
+			int tempMin = searchFromG1(rots, newCoords, g + 1, bound, r,max_depth);
+			if (tempMin > max_depth)
 			{
-				rots.push_back(r);
+				if(tempMin == max_depth + MAX_MOVES) rots.push_back(r);
 				return tempMin;
 			}
 			if (tempMin < min) min = tempMin;
 		}
 	}
 	return min;
+}
+
+MyCubeLite MyCubeLite::EdgeMult(const MyCubeLite& a, const MyCubeLite& b)
+{
+	MyCubeLite ret;
+
+	for (int e = UR; e < NumEdges; ++e)
+	{
+		ret.m_es[e].e = a.m_es[b.m_es[e].e].e;
+		int ori = b.m_es[e].o + a.m_es[b.m_es[e].e].o;
+		if (ori == 2) ori = 0;
+		ret.m_es[e].o = ori;
+	}
+
+	return ret;
 }
 
 void MyCubeLite::test()

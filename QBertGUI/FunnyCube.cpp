@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "FunnyCube.h"
 
 #include <windows.h> 
@@ -58,15 +58,15 @@ inline void trim(std::string &s) {
 
 /*
 std::vector<std::wstring> split(const std::wstring &s, wchar_t delim) {
-	std::vector<std::wstring> elems;
-	std::wstringstream ss(s);
-	std::wstring item;
-	while (std::getline(ss, item, delim)) {
-		if (!item.empty()) {
-			elems.push_back(item);
-		}
-	}
-	return elems;
+std::vector<std::wstring> elems;
+std::wstringstream ss(s);
+std::wstring item;
+while (std::getline(ss, item, delim)) {
+if (!item.empty()) {
+elems.push_back(item);
+}
+}
+return elems;
 }
 */
 
@@ -83,12 +83,12 @@ void FunnyCube::reset()
 	{
 		int row = i / m_size, col = i % m_size;
 
-		m_cube[baseWhite + i] = { Color::White, row, col };
-		m_cube[baseGreen + i] = { Color::Green, row, col };
-		m_cube[baseRed + i] = { Color::Red, row, col };
-		m_cube[baseBlue + i] = { Color::Blue, row, col };
-		m_cube[baseOrange + i] = { Color::Orange, row, col };
-		m_cube[baseYellow + i] = { Color::Yellow, row, col };
+		m_cube[baseWhite + i] = { ColorAsColorRef[White], row, col };
+		m_cube[baseGreen + i] = { ColorAsColorRef[Green], row, col };
+		m_cube[baseRed + i] = { ColorAsColorRef[Red], row, col };
+		m_cube[baseBlue + i] = { ColorAsColorRef[Blue], row, col };
+		m_cube[baseOrange + i] = { ColorAsColorRef[Orange], row, col };
+		m_cube[baseYellow + i] = { ColorAsColorRef[Yellow], row, col };
 	}
 }
 
@@ -232,6 +232,14 @@ void FunnyCube::turn(std::vector<RotInfo> rots)
 	for (unsigned i = 0; i < rots.size(); ++i)
 	{
 		turn(rots[i]);
+	}
+}
+
+void FunnyCube::colorIn(std::wstring s)
+{
+	for (int i = 0; i < s.length() && i < m_cube.size(); ++i)
+	{
+		m_cube[i].c = charToColor(s[i]);
 	}
 }
 
@@ -475,33 +483,129 @@ void FunnyCube::prettyPrint() const
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 
-void FunnyCube::prettyPrintColor(Color c)
+std::wstring FunnyCube::colorToWStr(COLORREF c)
+{
+	switch (c)
+	{
+	case ColorAsColorRef[White]:
+		return ColorAsWStr[White];
+	case ColorAsColorRef[Green]:
+		return ColorAsWStr[Green];
+	case ColorAsColorRef[Red]:
+		return ColorAsWStr[Red];
+	case ColorAsColorRef[Blue]:
+		return ColorAsWStr[Blue];
+	case ColorAsColorRef[Orange]:
+		return ColorAsWStr[Orange];
+	case ColorAsColorRef[Yellow]:
+		return ColorAsWStr[Yellow];
+	}
+
+	return L"?";
+}
+
+std::string FunnyCube::colorToStr(COLORREF c)
+{
+	switch (c)
+	{
+	case ColorAsColorRef[White]:
+		return ColorAsStr[White];
+	case ColorAsColorRef[Green]:
+		return ColorAsStr[Green];
+	case ColorAsColorRef[Red]:
+		return ColorAsStr[Red];
+	case ColorAsColorRef[Blue]:
+		return ColorAsStr[Blue];
+	case ColorAsColorRef[Orange]:
+		return ColorAsStr[Orange];
+	case ColorAsColorRef[Yellow]:
+		return ColorAsStr[Yellow];
+	}
+
+	return "?";
+}
+
+COLORREF FunnyCube::charToColor(wchar_t s)
+{
+	switch (s)
+	{
+	case L'W':
+	case L'w':
+		return ColorAsColorRef[White];
+	case L'R':
+	case L'r':
+		return ColorAsColorRef[Red];
+	case L'O':
+	case L'o':
+		return ColorAsColorRef[Orange];
+	case L'B':
+	case L'b':
+		return ColorAsColorRef[Blue];
+	case L'G':
+	case L'g':
+		return ColorAsColorRef[Green];
+	case L'Y':
+	case L'y':
+		return ColorAsColorRef[Yellow];
+	}
+
+	return COLORREF();
+}
+
+COLORREF FunnyCube::charToColor(char s)
+{
+	switch (s)
+	{
+	case 'W':
+	case 'w':
+		return ColorAsColorRef[White];
+	case 'R':
+	case 'r':
+		return ColorAsColorRef[Red];
+	case 'O':
+	case 'o':
+		return ColorAsColorRef[Orange];
+	case 'B':
+	case 'b':
+		return ColorAsColorRef[Blue];
+	case 'G':
+	case 'g':
+		return ColorAsColorRef[Green];
+	case 'Y':
+	case 'y':
+		return ColorAsColorRef[Yellow];
+	}
+
+	return COLORREF();
+}
+
+void FunnyCube::prettyPrintColor(COLORREF c)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	switch (c)
 	{
-	case Color::White:
+	case ColorAsColorRef[White]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 		break;
-	case Color::Green:
+	case ColorAsColorRef[Green]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		break;
-	case Color::Red:
+	case ColorAsColorRef[Red]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
 		break;
-	case Color::Blue:
+	case ColorAsColorRef[Blue]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
 		break;
-	case Color::Orange:
+	case ColorAsColorRef[Orange]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		break;
-	case Color::Yellow:
+	case ColorAsColorRef[Yellow]:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
 		break;
 	}
 
-	std::cout << "¡";
+	std::cout << "ï¿½ï¿½";
 
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
@@ -510,7 +614,7 @@ FunnyCube::RotInfo FunnyCube::strToRot(std::wstring s)
 {
 	trim(s);
 	if (s[0] == L'(') s = s.substr(1);
-	if (s[s.length()-1] == L')') s = s.substr(0, s.length()-1);
+	if (s[s.length() - 1] == L')') s = s.substr(0, s.length() - 1);
 
 	RotInfo ret{ BadMove, 0, 0, false };
 	std::wregex rgx(L"^(\\d*)([a-zA-Z])(w?)(\\d*)('?)$");
@@ -806,7 +910,7 @@ std::wstring FunnyCube::rotToNotationW(RotInfo r) const
 		if (r.wide && r.layers == 2 && m_size <= 3)
 		{
 			//use lower case
-			ret[ret.length() - 1] = towlower(ret[ret.length()-1]);	
+			ret[ret.length() - 1] = towlower(ret[ret.length() - 1]);
 		}
 		else if (r.wide && (r.layers >= 3 || (r.layers == 2 && m_size > 3)))
 		{
@@ -860,7 +964,7 @@ std::string FunnyCube::rotToNotation(RotInfo r) const
 	return ret;
 }
 
-std::vector<FunnyCube::RotInfo> FunnyCube::strToRots(std::wstring s)
+std::vector<FunnyCube::RotInfo> FunnyCube::strToRots(std::wstring s, const AlgSaver *a)
 {
 	std::vector<FunnyCube::RotInfo> rots;
 
@@ -876,7 +980,18 @@ std::vector<FunnyCube::RotInfo> FunnyCube::strToRots(std::wstring s)
 
 	for (unsigned i = 0; i < cmds.size(); ++i)
 	{
-		rots.push_back(strToRot(cmds[i]));
+		RotInfo r = strToRot(cmds[i]);
+		if(r.m != BadMove)
+			rots.push_back(r);
+		else if (a != nullptr)
+		{
+			AlgSaver::Alg alg = a->get(cmds[i]);
+			if (alg.name != L"")
+			{
+				std::vector<FunnyCube::RotInfo> rots2 = strToRots(alg.alg, a);
+				rots.insert(rots.end(), rots2.begin(), rots2.end());
+			}
+		}
 	}
 
 	return rots;
@@ -961,10 +1076,10 @@ void FunnyCube::faceCW(Side s)
 		{
 
 			Facelet temp = get(s, row, col);
-			set(s, row, col,							get(s, m_size - col - 1, row));
-			set(s, m_size - col - 1, row,				get(s, m_size - row - 1, m_size - col - 1));
-			set(s, m_size - row - 1, m_size - col - 1,	get(s, col, m_size - row - 1));
-			set(s, col, m_size - row - 1,				temp);
+			set(s, row, col, get(s, m_size - col - 1, row));
+			set(s, m_size - col - 1, row, get(s, m_size - row - 1, m_size - col - 1));
+			set(s, m_size - row - 1, m_size - col - 1, get(s, col, m_size - row - 1));
+			set(s, col, m_size - row - 1, temp);
 
 
 		}
@@ -978,10 +1093,10 @@ void FunnyCube::faceCCW(Side s)
 		for (int col = 0; col < m_size / 2; ++col)
 		{
 			Facelet temp = get(s, row, col);
-			set(s, row, col,							get(s, col, m_size - row - 1));
-			set(s, col, m_size - row - 1,				get(s, m_size - row - 1, m_size - col - 1));
-			set(s, m_size - row - 1, m_size - col - 1,	get(s, m_size - col - 1, row));
-			set(s, m_size - col - 1, row,				temp);
+			set(s, row, col, get(s, col, m_size - row - 1));
+			set(s, col, m_size - row - 1, get(s, m_size - row - 1, m_size - col - 1));
+			set(s, m_size - row - 1, m_size - col - 1, get(s, m_size - col - 1, row));
+			set(s, m_size - col - 1, row, temp);
 		}
 	}
 }
