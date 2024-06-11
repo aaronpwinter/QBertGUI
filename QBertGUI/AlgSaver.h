@@ -43,7 +43,9 @@ public:
 	AlgSaver getCategory(std::wstring category) const;
 
 	static AlgSaver getTagged(const std::vector<Alg> &algs, std::wstring tag);
+	static AlgSaver getTagged(const std::vector<Alg>& algs, const std::vector<std::wstring>& tags);
 	AlgSaver getTagged(std::wstring tag) const;
+	AlgSaver getTagged(const std::vector<std::wstring>& tags) const;
 
 	//Returns something with ANY of the tags
 	static AlgSaver getCategoryTagged(const std::vector<Alg> &algs, std::wstring category, const std::vector<std::wstring>& tags);
@@ -61,7 +63,7 @@ public:
 	//Random
 	Alg getRandom() const;
 
-	static std::wstring randomSideTurn(std::wstring side);
+	static std::wstring randomSideTurn(std::wstring side, bool halfSymmetric = false);
 
 
 private:

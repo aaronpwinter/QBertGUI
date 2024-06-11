@@ -69,9 +69,33 @@ AlgSaver AlgSaver::getTagged(const std::vector<Alg>& algs, std::wstring tag)
 	return algs2;
 }
 
+AlgSaver AlgSaver::getTagged(const std::vector<Alg>& algs, const std::vector<std::wstring>& tags)
+{
+	std::vector<AlgSaver::Alg> algs2;
+
+	for (Alg a : algs)
+	{
+		for (std::wstring t : tags)
+		{
+			if (hasTag(a, t))
+			{
+				algs2.push_back(a);
+				break;
+			}
+		}
+	}
+
+	return algs2;
+}
+
 AlgSaver AlgSaver::getTagged(std::wstring tag) const
 {
 	return getTagged(m_Algs, tag);
+}
+
+AlgSaver AlgSaver::getTagged(const std::vector<std::wstring>& tags) const
+{
+	return getTagged(m_Algs, tags);
 }
 
 AlgSaver AlgSaver::getCategoryTagged(const std::vector<Alg>& algs, std::wstring category, const std::vector<std::wstring>& tags)
@@ -84,7 +108,11 @@ AlgSaver AlgSaver::getCategoryTagged(const std::vector<Alg>& algs, std::wstring 
 		{
 			for (std::wstring t : tags)
 			{
-				if(hasTag(a, t)) algs2.push_back(a);
+				if (hasTag(a, t))
+				{
+					algs2.push_back(a);
+					break;
+				}
 			}
 		}
 	}
@@ -178,9 +206,14 @@ AlgSaver::Alg AlgSaver::getRandom() const
 	return m_Algs[rand() % m_Algs.size()];
 }
 
-std::wstring AlgSaver::randomSideTurn(std::wstring side)
+std::wstring AlgSaver::randomSideTurn(std::wstring side, bool halfSymmetric)
 {
-	switch (rand() % 4)
+	srand(unsigned(time(NULL)));
+
+	//If its half symmetric you only do a U turn if turning at all (to make following steps same when practicing)
+	int turning = rand() % (halfSymmetric? 2 : 4);
+
+	switch (turning)
 	{
 	case 1:
 		return side;
