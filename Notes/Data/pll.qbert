@@ -1,22 +1,22 @@
 *Beginner, Full
 Ua, R U R' U R' U' R2 U' R' U R' U R
 Ub, R' U R3 U' R' U' R' U R U R2
-H,  (M2' U' M2') U2 (M2' U' M2') 
-Z, M' U' M2' U' M2' U' M' U2 M2
+H,  (M2' U' M2') U2 (M2' U' M2'), Symmetric
+Z,M' U' M2' U' M2' U' M' U2 M2, Half_Symmetric
 T, R U R' U' R' F R2 U' R' U' R U R' F'
 Y,  F (R U' R' U') (R U R' F') (R U R' U') (R' F R F') 
 *Full
 Aa, x R' U R' D2 R U' R' D2 R2 x'
 Ab, x R2 D2 R U R' D2 R U' R x'
-E, x' R U' R' D R U R' D' R U R' D R U' R' D' x
+E, x' R U' R' D R U R' D' R U R' D R U' R' D' x, Half_Symmetric
 F,  (R' U' F') (R U R' U') (R' F R2 U') (R' U' R U) (R' U R) 
 Jb,  (R U R' F') (R U R' U') R' F R2 U' R'
 Ja,  (L' U' L F) (L' U' L U) L F' L2' U L 
 Ra,  (R U' R' U') (R U R) D (R' U' R) D' (R' U2 R')
 Rb,  (R' U2 R U2') R' F (R U R' U') R' F' R2 
 V,  R' U R U' R' f' U' R U2 R' U' R U' R' f R
-Na,  (R U R' U) (R U R' F') (R U R' U') (R' F R2 U') R' U2 (R U' R') 
-Nb,  (r D r' U2) (r D r' U2) (r D r' U2) (r D r' U2) (r D r')
+Na,  (R U R' U) (R U R' F') (R U R' U') (R' F R2 U') R' U2 (R U' R'), Symmetric
+Nb,  (r D r' U2) (r D r' U2) (r D r' U2) (r D r' U2) (r D r'), Symmetric
 Ga,  R2 U (R' U R' U') (R U' R2) D U' (R' U R D')
 Gb,  R U' R' U2 R' U' F R f' R' U R S R U' R'
 Gc,  R2' F2 (R U2 R U2') R' F (R U R' U') R' F R2

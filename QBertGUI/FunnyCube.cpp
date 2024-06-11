@@ -605,7 +605,7 @@ void FunnyCube::prettyPrintColor(COLORREF c)
 		break;
 	}
 
-	std::cout << "��";
+	std::cout << "■";
 
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
