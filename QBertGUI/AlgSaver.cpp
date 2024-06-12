@@ -201,15 +201,11 @@ AlgSaver::Alg AlgSaver::getRandom() const
 {
 	if(m_Algs.empty()) return Alg();
 
-	srand(unsigned(time(NULL)));
-
 	return m_Algs[rand() % m_Algs.size()];
 }
 
 std::wstring AlgSaver::randomSideTurn(std::wstring side, bool halfSymmetric)
 {
-	srand(unsigned(time(NULL)));
-
 	//If its half symmetric you only do a U turn if turning at all (to make following steps same when practicing)
 	int turning = rand() % (halfSymmetric? 2 : 4);
 
