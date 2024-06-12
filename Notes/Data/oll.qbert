@@ -69,7 +69,7 @@ Wario,(R' U' R U') (R' U R U) l U' R' U x
 Ant,F (U R U' R') (U R U' R') F'
 Rice_Cooker,(R U R' U R U') y (R U' R') F' y', Practice
 Streetlights,r U r' (U R U' R') (U R U' R') r U' r', Half_Symmetric, Practice
-Highway,(R’ F R U) (R U' R2' F') R2 U' R' (U R U R'), Half_Symmetric, Practice
+Highway,(R' F R U) (R U' R2' F') R2 U' R' (U R U R'), Half_Symmetric, Practice
 
 *Full, Knight
 Squeegee,(r' U' r) (R' U' R U) (r' U r)
