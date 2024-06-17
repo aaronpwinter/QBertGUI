@@ -144,6 +144,7 @@ bool AlgSaver::addAlg(Alg a)
 	Alg existing = get(a.name);
 	if (existing.name == a.name && existing.category == a.category) return false;
 
+	a.index = int(m_Algs.size());
 	m_Algs.push_back(a);
 
 	return true;
@@ -197,11 +198,50 @@ void AlgSaver::addAlgs(std::wstring allLines, std::wstring category)
 
 }
 
+int AlgSaver::getRandTicketCount() const
+{
+	unsigned ct = 0;
+	for (Alg a : m_Algs)
+	{
+		ct += a.randTickets;
+	}
+	return ct;
+}
+
 AlgSaver::Alg AlgSaver::getRandom() const
 {
-	if(m_Algs.empty()) return Alg();
+	unsigned tickets = getRandTicketCount();
+	if(tickets <= 0) return Alg();
 
-	return m_Algs[rand() % m_Algs.size()];
+	unsigned ticketIndex = (rand()*RAND_MAX + rand()) % tickets;
+	unsigned cur = 0;
+
+	for (Alg a : m_Algs)
+	{
+		cur += a.randTickets;
+		if (cur > ticketIndex) return a;
+	}
+
+	//idk mess up or something
+	return m_Algs[m_Algs.size()-1];
+}
+
+void AlgSaver::updateRandTickets(AlgSaver & algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc)
+{
+	//Update all algs
+	for (Alg a : algsToUpdate.m_Algs)
+	{
+		m_Algs[a.index].randTickets += m_Algs[a.index].randTicketInc;
+	}
+
+	//Update picked alg increment
+	if (pickedAlg.index != -1)
+	{
+		if(int(m_Algs[pickedAlg.index].randTicketInc) + ticketIncChange < minTicketInc) m_Algs[pickedAlg.index].randTicketInc = minTicketInc;
+		else m_Algs[pickedAlg.index].randTicketInc += ticketIncChange;
+
+		m_Algs[pickedAlg.index].randTickets = 0;
+	}
 }
 
 std::wstring AlgSaver::randomSideTurn(std::wstring side, bool halfSymmetric)

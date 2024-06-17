@@ -18,9 +18,12 @@ class AlgSaver
 public:
 	struct Alg
 	{
+
 		std::wstring name, alg, category;
 		std::vector<std::wstring> tags = std::vector<std::wstring>();
 
+		int index = -1;
+		unsigned randTickets = 1, randTicketInc = 1;
 
 	};
 
@@ -61,7 +64,10 @@ public:
 	void addAlgs(std::wstring allLines, std::wstring category = L"");
 
 	//Random
+	int getRandTicketCount() const;
+
 	Alg getRandom() const;
+	void updateRandTickets(AlgSaver& algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc = 1);
 
 	static std::wstring randomSideTurn(std::wstring side, bool halfSymmetric = false);
 
