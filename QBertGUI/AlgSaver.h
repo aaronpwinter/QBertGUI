@@ -67,7 +67,7 @@ public:
 	int getRandTicketCount() const;
 
 	Alg getRandom() const;
-	void updateRandTickets(AlgSaver& algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc = 1);
+	void updateRandTickets(const AlgSaver& algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc = 1);
 
 	static std::wstring randomSideTurn(std::wstring side, bool halfSymmetric = false);
 

@@ -226,7 +226,7 @@ AlgSaver::Alg AlgSaver::getRandom() const
 	return m_Algs[m_Algs.size()-1];
 }
 
-void AlgSaver::updateRandTickets(AlgSaver & algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc)
+void AlgSaver::updateRandTickets(const AlgSaver & algsToUpdate, Alg pickedAlg, int ticketIncChange, int minTicketInc)
 {
 	//Update all algs
 	for (Alg a : algsToUpdate.m_Algs)
