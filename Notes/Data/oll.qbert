@@ -5,7 +5,7 @@ Cross,R U R' U R U' R' U R U2 R', Half_Symmetric
 Bruno,R U2' R2' U' R2 U' R2' U2' R
 Chameleon,(r U R' U') (r' F R F')
 Headlights, R2 D R' U2 R D' R' U2 R', Practice
-Bowtie, F' (r U R' U') r' F R
+Bowtie, F R' F' r U R U' r'
 
 *Full, Dot
 Blank,(R U2') (R2' F R F') U2' (R' F R F'), Half_Symmetric
@@ -14,8 +14,8 @@ Slash,(R U R' U) (R' F R F') U2' (R' F R F')
 X, M' U' R' U' R U M2 U' R' U r, Symmetric, Practice
 Bunny,M U (R U R' U') M' (R' F R F')
 Crown,(r U R' U R U2 r') (r' U' R U' R' U2 r)
-Anti_Mini_Slash,F U R U' R F' U' F R U R' U' F'
-Mini_Slash,F U R U' R F' U F R U R' U' F'
+Anti_Mini_Slash,F U R U' R' F' U' F R U R' U' F'
+Mini_Slash,F U R U' R' F' U F R U R' U' F'
 
 *Full, T_Shape
 T, F R U R' U' F'
