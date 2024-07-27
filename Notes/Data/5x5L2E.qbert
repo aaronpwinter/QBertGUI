@@ -1,0 +1,18 @@
+*No_Parity
+Basic_Right, Uw' (R U R' F R' F' R) Uw
+Basic_Left, 3Dw (R U R' F R' F' R) Uw
+Double, Uw' Dw (R U R' F R' F' R) Uw Dw
+Center_Swap, Uw2 Rw2' F2 2U2' F2 Rw2 Uw2
+Basic_Right_Flip, F Rw2 D2 Rw' U2 Rw D2 Rw' U2 Rw' F', Flip
+Basic_Left_Flip, F' Rw2' U2' Rw D2 Rw' U2 Rw D2 Rw F, Flip
+Center_Swap_Flip, R U' F (Rw2' F2 U2' Rw2' U2' F2 Rw2) F' R2' F2 R, Flip
+
+*Parity
+Normal_Parity, Rw U2 x Rw U2 Rw U2' 3Rw' U2 Lw U2 Rw' U2' Rw U2 Rw' U2' Rw'
+2, x U Rw U2 Rw U2' x U2 Rw U2' 3Rw' U2 3Rw B2 Rw2' x' U x'
+3, x U' F2 (Rw U2 Rw U2') Rw' F2 (Rw' U2 Rw' U2') (Rw U2 Rw' U2' Rw2) U' x'
+4, x U' (B2 Rw' U2 Rw' U2') (Rw B2) (Rw U2 Rw U2') (Rw' U2 Rw U2' Rw2') U' x'
+5, x U' (Rw U2' Rw2' U2') (Rw' U2 Rw U2') (Rw' U2 Rw2' U2' Rw) U' x'
+6, x U' (Rw' U2' Rw2 U2) (Rw U2' Rw' U2) (Rw U2' Rw2 U2' Rw') U' x'
+7, x U' (Rw' U2' Rw U2) 3Lw' U2 (Rw U2 Rw U2') (Rw' U2 Rw U2' Rw2') U2 x2 F'
+Center_Swap_Parity, x U Rw2 B2 Rw' U2 Rw' U2' x' U2 (Rw' U2' Rw U2) Rw' U2' Rw2 U2 F
