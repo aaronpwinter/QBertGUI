@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "AlgSaver.h"
 
+#include <iostream>
+#include <fstream>
 	
 
 AlgSaver::AlgSaver()
@@ -196,6 +198,13 @@ void AlgSaver::addAlgs(std::wstring allLines, std::wstring category)
 		}
 	}
 
+}
+
+void AlgSaver::addAlgsFromFile(const std::wstring& path, std::wstring category)
+{
+	std::wifstream file(path);
+	std::wstring allLines = std::wstring((std::istreambuf_iterator<wchar_t>(file)), std::istreambuf_iterator<wchar_t>());
+	addAlgs(allLines, category);
 }
 
 int AlgSaver::getRandTicketCount() const

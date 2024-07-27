@@ -63,6 +63,9 @@ public:
 	bool addAlg(std::wstring line, std::wstring category = L"", std::vector<std::wstring> tags = std::vector<std::wstring>());
 	void addAlgs(std::wstring allLines, std::wstring category = L"");
 
+	//Add algs from file
+	void addAlgsFromFile(const std::wstring& path, std::wstring category = L"");
+
 	//Random
 	int getRandTicketCount() const;
 

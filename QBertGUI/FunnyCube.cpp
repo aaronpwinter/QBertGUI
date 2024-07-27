@@ -1055,6 +1055,62 @@ std::vector<FunnyCube::RotInfo> FunnyCube::reverseRots(std::vector<RotInfo> rots
 	return ret;
 }
 
+FunnyCube::RotInfo FunnyCube::rotateRot(RotInfo r, Move m)
+{
+	RotInfo rRet(r);
+	//X = R, Y = U, Z = F
+
+	//original{ U, L, F, R, B, D, X, Y, Z, M, E, S, BadMove };
+	static const Move conv_X[] = { B, L, U, R, D, F, X,  Z, Y, M,  S, E, BadMove };
+	static const int turn_X[] = { 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, 1 };
+	static const Move conv_Y[] = { U, F, R, B, L, D, Z, Y,  X, S, E,  M, BadMove };
+	static const int turn_Y[] = { 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1 };
+	static const Move conv_Z[] = { R, U, F, D, B, L,  Y, X, Z,  E, M, S, BadMove };
+	static const int turn_Z[] = { 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, 1, 1 };
+
+	switch (m)
+	{
+	case X:
+		rRet.cwturn = r.cwturn * turn_X[r.m];
+		rRet.m = conv_X[r.m];
+		break;
+	case Y:
+		rRet.cwturn = r.cwturn * turn_Y[r.m];
+		rRet.m = conv_Y[r.m];
+		break;
+	case Z:
+		rRet.cwturn = r.cwturn * turn_Z[r.m];
+		rRet.m = conv_Z[r.m];
+		break;
+	}
+
+	return rRet;
+}
+
+FunnyCube::RotInfo FunnyCube::rotateRot(RotInfo r, RotInfo rotation)
+{
+	RotInfo rRet(r);
+
+	for (int i = 0; i < (rotation.cwturn % 4 + 4) % 4; ++i)
+	{
+		rRet = rotateRot(rRet, rotation.m);
+	}
+
+	return rRet;
+}
+
+std::vector<FunnyCube::RotInfo> FunnyCube::rotateRots(const std::vector<FunnyCube::RotInfo>& r, RotInfo rotation)
+{
+	std::vector<FunnyCube::RotInfo> rots;
+
+	for (int i = 0; i < r.size(); ++i)
+	{
+		rots.push_back(rotateRot(r[i], rotation));
+	}
+
+	return rots;
+}
+
 void FunnyCube::faceCW(Side s)
 {
 	/*

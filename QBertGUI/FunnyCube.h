@@ -145,6 +145,10 @@ public:
 
 	static std::vector<FunnyCube::RotInfo> reverseRots(std::vector<RotInfo> rots);
 
+	//Rotate a rotation about an axis (ie: x, y, z turns an R to something else !)
+	static FunnyCube::RotInfo rotateRot(RotInfo r, Move m);
+	static FunnyCube::RotInfo rotateRot(RotInfo r, RotInfo rotation);
+	static std::vector<FunnyCube::RotInfo> rotateRots(const std::vector<FunnyCube::RotInfo>& r, RotInfo rotation);
 
 	//-MEMBER FUNCTIONS
 	std::wstring asWString() const;
